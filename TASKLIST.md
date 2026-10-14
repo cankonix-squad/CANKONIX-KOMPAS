@@ -58,6 +58,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Sediakan bagian di halaman utama untuk memasukkan nomor tiket KMP baru dan membuka kembali permintaan; tautan privat lama tetap didukung.
 - [x] Gunakan nomor tiket baru dengan kode acak 128 bit sebagai akses rahasia selama 30 hari; tiket pendek lama tetap memerlukan token pada tautan privat.
 - [x] Sediakan pembuatan ulang kode akses oleh admin/sales untuk permintaan lama; kode dan tautan sebelumnya dicabut saat kode baru dibuat.
+- [x] Tampilkan tanggal kedaluwarsa kode akses yang sedang dipakai pada halaman tiket, termasuk setelah admin/sales membuat kode baru.
 - [x] Tampilkan penawaran final di halaman privat hanya setelah admin/sales menyimpan draf dan menerbitkannya.
 - [x] Pastikan formulir tidak meminta password, API key, token, atau kredensial pengujian.
 

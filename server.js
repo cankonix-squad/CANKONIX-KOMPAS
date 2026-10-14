@@ -172,7 +172,7 @@ const route = async (req, res) => {
       const validOriginal = row && row.token_expires_at >= now() && crypto.timingSafeEqual(Buffer.from(row.token_hash), Buffer.from(candidate))
       const validCode = row?.access_code_hash && row.access_code_expires_at >= now() && crypto.timingSafeEqual(Buffer.from(row.access_code_hash), Buffer.from(candidate))
       if (!validOriginal && !validCode) return error(res, 404, 'Tautan tidak tersedia atau sudah kedaluwarsa.')
-      if (req.method === 'GET') return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, createdAt: row.created_at, offer: row.offer_published_at ? { price: row.offer_price, summary: row.offer_summary, validUntil: row.offer_valid_until, publishedAt: row.offer_published_at } : null })
+      if (req.method === 'GET') return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, createdAt: row.created_at, accessExpiresAt: validCode ? row.access_code_expires_at : row.token_expires_at, offer: row.offer_published_at ? { price: row.offer_price, summary: row.offer_summary, validUntil: row.offer_valid_until, publishedAt: row.offer_published_at } : null })
       if (req.method === 'PATCH') {
         const body = await parseBody(req)
         const clean = {}

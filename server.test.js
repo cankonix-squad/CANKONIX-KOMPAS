@@ -70,6 +70,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(privateRequest.data.contact.phone, '+62 812 3456 7890')
     assert.equal(privateRequest.data.contact.consentVersion, 'v1-2026-10-14')
     assert.ok(privateRequest.data.contact.consentAt)
+    assert.ok(Date.parse(privateRequest.data.accessExpiresAt) > Date.now())
     assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).data.id, request.data.id)
     assert.equal((await call(privateUrl, 'PATCH', { targets:'contoh.test' })).status, 200)
 
@@ -165,7 +166,9 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).status, 404)
     assert.equal((await call(privateUrl)).status, 404)
     const renewedUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(reissued.data.code)}`
-    assert.equal((await call(renewedUrl)).status, 200)
+    const renewedRequest = await call(renewedUrl)
+    assert.equal(renewedRequest.status, 200)
+    assert.equal(renewedRequest.data.accessExpiresAt, reissued.data.expiresAt)
 
     const publish = await call('/api/admin/rules/publish', 'POST', { version:1 }, adminCookie)
     assert.equal(publish.status, 200)
