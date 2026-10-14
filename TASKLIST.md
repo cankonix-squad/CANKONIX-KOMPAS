@@ -22,6 +22,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Tetapkan daftar pertanyaan estimasi awal untuk Web Application, API, Mobile Application, dan Infrastruktur dari workbook sumber; pemetaan ada di `QUESTION_MAPPING.md`.
 - [x] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar. Kolom pendalaman khusus objek masih perlu dipilih sebelum rilis.
 - [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
+- [x] Siapkan lembar kalibrasi privat untuk biaya harian, margin, deliverable, retest, pekerjaan yang tumpang tindih, dan tiga proyek pembanding; isian bisnis masih menunggu Cankonix.
 - [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
 - [ ] Kalibrasi aturan dengan contoh proyek Cankonix; catat siapa yang menyetujui versi pertama.
 - [x] Tentukan kondisi yang menampilkan kisaran rupiah dan kondisi yang wajib ditinjau manual; angka hanya tampil dari versi aturan yang sudah diterbitkan.
@@ -96,6 +97,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Periksa tampilan visual desktop dan ponsel; pemilik produk menyatakan keduanya aman pada 14 Oktober 2026.
 - [x] Perbaiki navigasi keyboard tabel permintaan admin: tiap referensi memakai tombol yang dapat difokuskan; tabel akun memiliki header dan label peran yang jelas.
 - [x] Pindahkan fokus ke judul saat admin membuka detail permintaan atau kembali ke dashboard; umumkan pesan kesalahan login dan perubahan permintaan kepada pembaca layar.
+- [x] Catat audit kode dan rasio warna awal di `ACCESSIBILITY_AUDIT.md`; tandai kolom kontak yang salah agar pesan kesalahannya terhubung untuk pembaca layar.
 - [ ] Periksa kontras warna, fokus keyboard, label input, dan pesan kesalahan secara khusus untuk aksesibilitas. Fokus judul saat berpindah langkah dan penanda langkah aktif sudah ditambahkan; verifikasi langsung tetap diperlukan.
 
 **Selesai bila:** halaman KOMPAS terlihat satu keluarga dengan Comply dan seluruh alur klien nyaman dipakai di ponsel.

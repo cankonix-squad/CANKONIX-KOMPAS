@@ -44,12 +44,12 @@ function render(focusHeading=false){
   document.querySelector('#next')?.addEventListener('click',next)
   document.querySelector('#request')?.addEventListener('click',requestProposal)
   document.querySelector('#edit-contact')?.addEventListener('click',()=>{state.step=0;render(true)})
-  document.querySelectorAll('[data-contact]').forEach(input=>input.addEventListener('input',()=>{state.contact=readContact();sessionStorage.setItem(contactKey,JSON.stringify(state.contact));document.querySelector('#contact-error').textContent=''}))
+  document.querySelectorAll('[data-contact]').forEach(input=>input.addEventListener('input',()=>{state.contact=readContact();sessionStorage.setItem(contactKey,JSON.stringify(state.contact));input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');document.querySelector('#contact-error').textContent=''}))
   if(focusHeading){const heading=state.step===0?app.querySelector('#contact-details summary'):app.querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus()}
 }
 function validateContact(){
   const contact=readContact()
-  const fieldError=(id,message)=>{document.querySelector('#contact-details').open=true;document.querySelector('#contact-error').textContent=message;document.querySelector(`#${id}`).focus();return false}
+  const fieldError=(id,message)=>{document.querySelector('#contact-details').open=true;document.querySelector('#contact-error').textContent=message;const input=document.querySelector(`#${id}`);input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','contact-error');input.focus();return false}
   if(!contact.name)return fieldError('contact-name','Isi nama lengkap Anda.')
   if(!contact.company)return fieldError('contact-company','Isi nama perusahaan Anda.')
   if(!document.querySelector('#contact-email').checkValidity())return fieldError('contact-email','Isi email kerja yang valid.')
