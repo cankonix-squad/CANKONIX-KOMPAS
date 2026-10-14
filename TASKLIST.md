@@ -105,9 +105,10 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Tinjau perubahan, buat commit lokal, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
 - [x] Push fondasi MVP yang lulus tes awal ke branch `main`; commit pertama `4950330` bukan kandidat rilis final.
 - [x] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
-- [ ] Periksa sertifikat TLS domain KOMPAS, backup volume SQLite, dan konfigurasi akhir VPS; Docker dan jaringan Traefik sudah diketahui, folder target masih kosong.
+- [ ] Periksa sertifikat TLS domain KOMPAS dan backup volume SQLite setelah deploy pertama; Docker dan jaringan Traefik sudah diketahui.
 - [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
-- [ ] Siapkan konfigurasi produksi di luar repo, migrasi database, prosedur deploy, health check, dan langkah rollback.
+- [x] Siapkan konfigurasi produksi di luar repo, migrasi database otomatis, prosedur deploy, health check, dan langkah rollback dalam `DEPLOYMENT.md`.
+- [ ] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, backup SQLite, deploy VPS, dan pemeriksaan HTTPS.
 - [ ] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal, login admin, dashboard, dan HTTPS.
 - [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.
 

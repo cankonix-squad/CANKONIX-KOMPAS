@@ -1,6 +1,7 @@
 services:
   kompas:
     build: .
+    image: cankonix-kompas:latest
     restart: unless-stopped
     env_file: .env
     environment:

@@ -1,0 +1,51 @@
+name: KOMPAS CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Test application
+        run: npm test
+      - name: Build production image
+        run: docker build -t cankonix-kompas:ci .
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    concurrency:
+      group: kompas-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure pinned SSH host and deploy key
+        env:
+          DEPLOY_KEY: ${{ secrets.KOMPAS_DEPLOY_KEY }}
+          KNOWN_HOST: ${{ secrets.KOMPAS_KNOWN_HOST }}
+        run: |
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/kompas_deploy"
+          printf '%s\n' "$KNOWN_HOST" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/kompas_deploy" "$HOME/.ssh/known_hosts"
+      - name: Copy release to VPS
+        run: |
+          ssh -i "$HOME/.ssh/kompas_deploy" -o StrictHostKeyChecking=yes root@187.77.127.202 'mkdir -p /root/cankonix-node/apps/cankonix-kompas'
+          rsync -az --delete \
+            --exclude='.env*' --exclude='data/' --exclude='.git/' --exclude='.github/' \
+            -e "ssh -i $HOME/.ssh/kompas_deploy -o StrictHostKeyChecking=yes" \
+            ./ root@187.77.127.202:/root/cankonix-node/apps/cankonix-kompas/
+      - name: Build, back up, deploy, and verify HTTPS
+        run: ssh -i "$HOME/.ssh/kompas_deploy" -o StrictHostKeyChecking=yes root@187.77.127.202 'sh /root/cankonix-node/apps/cankonix-kompas/scripts/deploy-production.sh'
