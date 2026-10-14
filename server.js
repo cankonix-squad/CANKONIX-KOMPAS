@@ -319,13 +319,15 @@ const route = async (req, res) => {
       if (!requireAdmin(req, res, ['admin', 'sales'])) return
       const row = db.prepare('SELECT offer_price,offer_summary,offer_valid_until,offer_published_at FROM requests WHERE id=?').get(offerMatch[1])
       if (!row) return error(res, 404, 'Permintaan tidak ditemukan.')
-      if (row.offer_published_at) return error(res, 409, 'Penawaran sudah dikirim dan tidak dapat diubah dari formulir ini.')
+      if (row.offer_published_at) return error(res, 409, 'Penawaran sudah diterbitkan dan tidak dapat diubah dari formulir ini.')
       if (offerMatch[2]) {
-        if (!row.offer_price || !row.offer_summary || !row.offer_valid_until) throw new Error('Simpan rincian penawaran sebelum mengirimnya.')
+        const expected = (await parseBody(req)).expected
+        if (expected && (Number(expected.price) !== row.offer_price || expected.summary !== row.offer_summary || expected.validUntil !== row.offer_valid_until)) return error(res, 409, 'Draf penawaran berubah. Muat ulang detail dan periksa nilainya sebelum menerbitkan.')
+        if (!row.offer_price || !row.offer_summary || !row.offer_valid_until) throw new Error('Simpan rincian penawaran sebelum menerbitkannya.')
         if (row.offer_valid_until < now().slice(0, 10)) throw new Error('Masa berlaku penawaran sudah lewat.')
         const published = now()
         db.prepare("UPDATE requests SET offer_published_at=?,status='Proposal dikirim',updated_at=? WHERE id=?").run(published, published, offerMatch[1])
-        db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(offerMatch[1], 'offer_published', `Penawaran Rp${row.offer_price} dikirim oleh ${admin(req).email}`, published)
+        db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(offerMatch[1], 'offer_published', `Penawaran Rp${row.offer_price} diterbitkan di halaman tiket oleh ${admin(req).email}`, published)
         return json(res, 200, { ok: true, publishedAt: published })
       }
       const body = await parseBody(req)

@@ -80,6 +80,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Tampilkan draf tarif yang sudah tersedia di menu **Aturan harga** beserta pratinjau 12 kombinasi objek/metode dan dampak kondisi tambahan; angka dapat diedit tanpa otomatis diterbitkan.
 - [x] Tambahkan navigasi sisi kiri pada dashboard admin untuk ringkasan, permintaan, pengguna, aturan harga, dan password; di ponsel menu menjadi baris yang dapat digeser.
 - [x] Admin/sales dapat menyiapkan harga penawaran final, ringkasan cakupan, dan masa berlaku; penerbitan dicatat dan draf tidak terlihat oleh klien.
+- [x] Tampilkan ringkasan draf penawaran tersimpan di admin, wajibkan penyimpanan perubahan sebelum terbit, dan jelaskan bahwa penerbitan menampilkan penawaran di halaman tiket tanpa email otomatis.
 - [x] Sediakan ekspor CSV untuk admin/sales; akses tanpa login dan peran lain ditolak.
 - [x] Tambahkan halaman **Pengguna internal** khusus pemilik sistem: undang beberapa Admin/Sales/Reviewer/Pengelola harga, ubah peran, nonaktifkan akun, dan cabut sesi aktif. Undangan sekali pakai berlaku 24 jam; password di-hash dengan salt; perubahan tercatat dalam riwayat; akun pemilik tidak dapat dinonaktifkan. Akun awal dari `.env` dimigrasikan satu kali ke database.
 - [x] Sediakan penggantian password mandiri yang mencabut seluruh sesi akun.
@@ -104,6 +105,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Uji API untuk setiap jenis objek, gabungan objek, “Belum tahu”, dan kasus yang wajib ditinjau manual.
 - [ ] Uji contoh harga yang disetujui Cankonix. Batas minimum, perubahan versi aturan, dan pengiriman ganda sudah diuji dengan data sintetis.
 - [x] Uji hak akses admin, tautan privat, masa berlaku token, dan pencatatan aktivitas melalui API lokal.
+- [x] Uji alur penawaran lokal dari draf internal hingga harga, ringkasan, dan masa berlaku terlihat melalui tiket klien setelah terbit.
 - [x] Uji metrik dashboard terhadap data permintaan sintetis yang dibuat saat pengujian.
 - [x] Pemeriksaan visual langsung di browser desktop dan ponsel dinyatakan aman oleh pemilik produk; tes API, pemeriksaan sintaks JavaScript, dan build Docker di CI/CD juga lulus.
 - [x] Periksa file yang dilacak Git: `.env`, SQLite, benchmark privat, dan workbook sumber diabaikan; tidak ada data klien nyata yang dimasukkan ke repo.

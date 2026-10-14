@@ -213,11 +213,12 @@ async function detail(id) {
       <label class="field">Catatan internal<textarea id="notes" maxlength="4000">${escape(item.notes)}</textarea></label>
       <button class="button" id="save">Simpan perubahan</button><p class="error" id="error" role="alert"></p>` : ''}
       ${['admin','sales'].includes(user.role) ? `<h2>Penawaran untuk klien</h2>
-      ${item.offer.publishedAt ? `<p class="notice">Penawaran sudah dikirim pada ${escape(item.offer.publishedAt)} dan dapat dilihat lewat tautan privat klien.</p>` : '<p class="notice warn">Draf penawaran hanya terlihat oleh admin. Periksa harga dan cakupan sebelum mengirim.</p>'}
+      ${item.offer.publishedAt ? `<p class="notice">Penawaran diterbitkan pada ${escape(item.offer.publishedAt)} dan dapat dilihat lewat nomor tiket klien.</p>` : '<p class="notice warn">Draf hanya terlihat oleh tim internal. Simpan perubahan, lalu terbitkan di halaman tiket klien. Sistem tidak mengirim email otomatis.</p>'}
+      ${item.offer.price && item.offer.summary && item.offer.validUntil ? `<div class="offer-preview"><strong>${item.offer.publishedAt ? 'Penawaran terbit' : 'Draf tersimpan'}</strong><p>Harga: ${money(item.offer.price)}<br>Berlaku sampai: ${escape(item.offer.validUntil)}</p><p>${escape(item.offer.summary)}</p></div>` : ''}
       <label class="field">Harga penawaran final (Rp)<input id="offer-price" type="number" min="1" max="1000000000000" value="${escape(item.offer.price ?? '')}" ${item.offer.publishedAt?'disabled':''}></label>
       <label class="field">Ringkasan cakupan dan deliverable<textarea id="offer-summary" maxlength="4000" ${item.offer.publishedAt?'disabled':''}>${escape(item.offer.summary)}</textarea></label>
       <label class="field">Berlaku sampai<input id="offer-valid" type="date" value="${escape(item.offer.validUntil)}" ${item.offer.publishedAt?'disabled':''}></label>
-      ${item.offer.publishedAt?'': '<div class="actions"><button class="button secondary" id="offer-save">Simpan draf penawaran</button><button class="button" id="offer-publish">Kirim penawaran ke klien</button></div>'}
+      ${item.offer.publishedAt?'': '<div class="actions"><button class="button secondary" id="offer-save">Simpan draf penawaran</button><button class="button" id="offer-publish">Terbitkan di halaman tiket</button></div>'}
       <p class="error" id="offer-error" role="alert"></p>` : ''}
       <h2>Riwayat</h2><ul class="summary-list">${item.activity.map(entry => `<li>${new Date(entry.created_at).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('')}</ul>
     </section>`
@@ -249,8 +250,13 @@ async function detail(id) {
       }
       document.querySelector('#offer-publish').onclick = async () => {
         try {
-          if (!confirm('Kirim penawaran yang sudah disimpan kepada klien melalui tautan privat?')) return
-          await post(`/api/admin/requests/${id}/offer/publish`, {})
+          const saved = item.offer
+          const currentPrice = Number(document.querySelector('#offer-price').value)
+          const currentSummary = document.querySelector('#offer-summary').value.trim()
+          const currentValidUntil = document.querySelector('#offer-valid').value
+          if (!saved.price || currentPrice !== saved.price || currentSummary !== saved.summary || currentValidUntil !== saved.validUntil) throw new Error('Simpan perubahan sebagai draf penawaran sebelum menerbitkan.')
+          if (!confirm(`Terbitkan penawaran ${money(saved.price)} yang berlaku sampai ${saved.validUntil} di halaman tiket klien? Sistem tidak mengirim email otomatis.`)) return
+          await post(`/api/admin/requests/${id}/offer/publish`, { expected: { price: saved.price, summary: saved.summary, validUntil: saved.validUntil } })
           await detail(id)
         } catch (err) { document.querySelector('#offer-error').textContent = err.message }
       }
