@@ -1,7 +1,7 @@
 # Tasklist KOMPAS
 
 **Acuan produk:** [PRD.md](PRD.md)  
-**Status:** Fondasi MVP lokal sudah di-push; belum deploy  
+**Status:** MVP sudah live melalui CI/CD; penyempurnaan produk dan persetujuan harga masih berjalan
 **Tanggal:** 14 Oktober 2026
 
 ## Lokasi dan target rilis
@@ -15,7 +15,7 @@
 | Folder aplikasi pada VPS | `~/cankonix-node/apps/cankonix-kompas/` pada sesi `root@cankonix` |
 | Acuan aset dan tampilan | `/Users/cankonix/Documents/Cankonix Labs/COMPLY` |
 
-DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14 Oktober 2026. Folder aplikasi VPS ada dan masih kosong saat diperiksa. Host VPS tidak memiliki perintah `node`; Docker tersedia. Traefik memakai jaringan `cankonix-proxy`, dan contoh layanan Comply memakai entrypoint `websecure` dengan resolver `letsencrypt`. Permintaan HTTPS ke domain KOMPAS saat ini gagal verifikasi sertifikat; router dan sertifikat domain perlu diperiksa saat rilis. Backup volume serta konfigurasi produksi KOMPAS sendiri belum diverifikasi. Repo GitHub awalnya belum memiliki commit; fondasi MVP kini ada pada branch `main`.
+DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS melalui Docker Compose dan Traefik pada jaringan `cankonix-proxy`. Sertifikat HTTPS valid dan `/api/health` merespons 200 pada 14 Oktober 2026. Repo GitHub terhubung ke branch `main`; setiap push menjalankan tes, build, backup SQLite sebelum penggantian container, deploy, dan pemeriksaan HTTPS. Harga produksi masih berupa draf yang belum diterbitkan kepada klien.
 
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
@@ -105,11 +105,12 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Tinjau perubahan, buat commit lokal, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
 - [x] Push fondasi MVP yang lulus tes awal ke branch `main`; commit pertama `4950330` bukan kandidat rilis final.
 - [x] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
-- [ ] Periksa sertifikat TLS domain KOMPAS dan backup volume SQLite setelah deploy pertama; Docker dan jaringan Traefik sudah diketahui.
+- [x] Periksa sertifikat TLS domain KOMPAS; HTTPS valid dan container sehat. Verifikasi artefak backup pada deploy berikutnya masih diperlukan.
 - [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
 - [x] Siapkan konfigurasi produksi di luar repo, migrasi database otomatis, prosedur deploy, health check, dan langkah rollback dalam `DEPLOYMENT.md`.
-- [ ] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, backup SQLite, deploy VPS, dan pemeriksaan HTTPS.
-- [ ] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal, login admin, dashboard, dan HTTPS.
+- [x] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, deploy VPS, dan pemeriksaan HTTPS. Backup pada deploy kedua perlu diverifikasi.
+- [x] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal sintetis, akses tiket privat, login admin, dashboard, dan HTTPS.
+- [ ] Verifikasi artefak backup SQLite sesudah deploy kedua.
 - [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.
 
-**Gerbang rilis:** rilis live dilakukan setelah kandidat lokal dapat ditinjau, aturan harga disetujui, konfigurasi produksi diperiksa, dan keputusan publikasi diberikan. Tasklist ini tidak berarti deployment telah dilakukan.
+**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Pemeriksaan browser desktop/ponsel, pembatasan spam, dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.

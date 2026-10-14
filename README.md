@@ -21,6 +21,6 @@ Sebelum dipasang di domain HTTPS, set `COOKIE_SECURE=true`. Peran `sales` dan `r
 
 ## Catatan rilis
 
-Target repo: `https://github.com/cankonix-squad/CANKONIX-KOMPAS`. Target domain: `https://kompas.cankonix.com/`. Detail server dan gerbang rilis ada di [TASKLIST.md](TASKLIST.md). Aplikasi belum dideploy.
+Repo: `https://github.com/cankonix-squad/CANKONIX-KOMPAS`. Domain live: `https://kompas.cankonix.com/`. Status pengembangan dan pekerjaan lanjutan ada di [TASKLIST.md](TASKLIST.md). Harga otomatis belum ditampilkan kepada klien sampai admin menerbitkan draf tarif yang telah disetujui.
 
 `Dockerfile` dan `compose.example.yml` menyiapkan container dengan data SQLite persisten. `docker-compose.prod.yml` terhubung ke jaringan Traefik `cankonix-proxy`. Alur CI/CD, backup, pemeriksaan HTTPS, dan pemulihan dijelaskan di [DEPLOYMENT.md](DEPLOYMENT.md).
