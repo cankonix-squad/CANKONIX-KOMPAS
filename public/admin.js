@@ -167,7 +167,7 @@ async function detail(id) {
     root.innerHTML = `<section class="card">
       <button class="button secondary" id="back">← Kembali</button>
       <h2 style="margin-top:20px">${item.id} · ${escape(item.contact.company)}</h2>
-      <p>${escape(item.contact.name)} · <a href="mailto:${escape(item.contact.email)}">${escape(item.contact.email)}</a></p>
+      <p>${escape(item.contact.name)}${item.contact.position ? ` · ${escape(item.contact.position)}` : ''} · <a href="mailto:${escape(item.contact.email)}">${escape(item.contact.email)}</a>${item.contact.phone ? ` · ${escape(item.contact.phone)}` : ''}</p>
       <p>Hasil: <strong>${item.result.status === 'estimate' ? `${money(item.result.low)} – ${money(item.result.high)}` : 'Perlu ditinjau'}</strong> ${item.result.days !== null ? `· ${item.result.days} hari kerja` : ''}</p>
       <p>Versi aturan: ${item.result.rulesVersion ?? 'belum aktif'}</p>
       ${['admin','sales'].includes(user.role) ? `<div class="notice"><p>Klien dapat membuka permintaan dengan kode akses baru. Pembuatan ulang akan menonaktifkan kode dan tautan privat sebelumnya.</p><button class="button secondary" id="issue-code">Buat kode akses baru</button><p id="code-result" role="status"></p></div>` : ''}

@@ -48,9 +48,10 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     const unknown = await call('/api/estimate', 'POST', { ...scope(), objects:[{type:'web',count:1,size:'unknown'}], sessionId:'session-unknown-1234567890' })
     assert.equal(unknown.data.result.status, 'review')
 
-    const contact = { name:'Penguji', company:'Contoh PT', email:'penguji@example.com' }
+    const contact = { name:'Penguji', position:'Manajer TI', company:'Contoh PT', email:'penguji@example.com', phone:'+62 812 3456 7890' }
     const requestBody = { scope:scope(), contact, consent:true, idempotencyKey:'request-1234567890' }
     assert.equal((await call('/api/requests', 'POST', { ...requestBody, website:'spam.example' })).status, 400)
+    assert.equal((await call('/api/requests', 'POST', { ...requestBody, contact:{ ...contact, phone:'telepon tidak valid' } })).status, 400)
     const request = await call('/api/requests', 'POST', requestBody)
     assert.equal(request.status, 201)
     assert.match(request.data.id, /^KMP-\d{4}-[A-F0-9]{32}$/)
@@ -62,7 +63,10 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(duplicate.data.duplicate, true)
     assert.equal((await call(`/api/requests/${request.data.id}?token=wrong`)).status, 404)
     const privateUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(request.data.token)}`
-    assert.equal((await call(privateUrl)).status, 200)
+    const privateRequest = await call(privateUrl)
+    assert.equal(privateRequest.status, 200)
+    assert.equal(privateRequest.data.contact.position, 'Manajer TI')
+    assert.equal(privateRequest.data.contact.phone, '+62 812 3456 7890')
     assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).data.id, request.data.id)
     assert.equal((await call(privateUrl, 'PATCH', { targets:'contoh.test' })).status, 200)
 
@@ -107,6 +111,10 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(summary.data.counts.complete, 6)
     assert.equal(summary.data.counts.proposal, 1)
     assert.equal(summary.data.requests.length, 1)
+    const exportResponse = await fetch(base + '/api/admin/export', { headers:{ cookie:adminCookie } })
+    const csv = await exportResponse.text()
+    assert.equal(exportResponse.status, 200)
+    assert.ok(csv.includes('Manajer TI') && csv.includes('+62 812 3456 7890'))
     const detail = await call(`/api/admin/requests/${request.data.id}`, 'GET', undefined, adminCookie)
     assert.equal(detail.data.details.targets, 'contoh.test')
     assert.ok(detail.data.activity.some(item => item.action === 'details'))

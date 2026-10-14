@@ -135,10 +135,13 @@ const route = async (req, res) => {
       const scope = validateScope(body.scope)
       const contact = {
         name: String(body.contact?.name || '').trim().slice(0, 120),
+        position: String(body.contact?.position || '').trim().slice(0, 120),
         company: String(body.contact?.company || '').trim().slice(0, 160),
-        email: String(body.contact?.email || '').trim().toLowerCase().slice(0, 254)
+        email: String(body.contact?.email || '').trim().toLowerCase().slice(0, 254),
+        phone: String(body.contact?.phone || '').trim().slice(0, 25)
       }
       if (!contact.name || !contact.company || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email) || body.consent !== true) throw new Error('Lengkapi nama, perusahaan, email, dan persetujuan kontak.')
+      if (contact.phone && !/^\+?[0-9 ()-]{8,25}$/.test(contact.phone)) throw new Error('Nomor telepon tidak valid.')
       const key = String(body.idempotencyKey || '')
       if (!/^[a-zA-Z0-9_-]{16,100}$/.test(key)) throw new Error('Kunci permintaan tidak valid.')
       const existing = db.prepare('SELECT id,token_hash,token_expires_at FROM requests WHERE idempotency_key=?').get(key)
@@ -276,8 +279,8 @@ const route = async (req, res) => {
       if (!requireAdmin(req, res, ['admin', 'sales'])) return
       const rows = db.prepare('SELECT id,contact,scope,result,status,owner,created_at FROM requests ORDER BY created_at DESC').all()
       const cell = value => { const text = String(value ?? ''); const safe = /^[\s]*[=+@\-]/.test(text) ? `'${text}` : text; return `"${safe.replaceAll('"', '""')}"` }
-      const columns = ['Referensi', 'Tanggal UTC', 'Perusahaan', 'Nama', 'Email', 'Objek', 'Status', 'Penanggung jawab', 'Hasil', 'Harga minimum', 'Harga maksimum']
-      const lines = rows.map(row => { const contact = JSON.parse(row.contact); const scope = JSON.parse(row.scope); const result = JSON.parse(row.result); return [row.id,row.created_at,contact.company,contact.name,contact.email,scope.objects.map(o=>`${o.type}:${o.count}`).join('; '),row.status,row.owner,result.status,result.low,result.high].map(cell).join(',') })
+      const columns = ['Referensi', 'Tanggal UTC', 'Perusahaan', 'Nama', 'Jabatan', 'Email', 'Telepon', 'Objek', 'Status', 'Penanggung jawab', 'Hasil', 'Harga minimum', 'Harga maksimum']
+      const lines = rows.map(row => { const contact = JSON.parse(row.contact); const scope = JSON.parse(row.scope); const result = JSON.parse(row.result); return [row.id,row.created_at,contact.company,contact.name,contact.position,contact.email,contact.phone,scope.objects.map(o=>`${o.type}:${o.count}`).join('; '),row.status,row.owner,result.status,result.low,result.high].map(cell).join(',') })
       res.writeHead(200, { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': 'attachment; filename="kompas-permintaan.csv"', 'cache-control': 'no-store' })
       return res.end('\ufeff' + [columns.map(cell).join(','), ...lines].join('\r\n'))
     }

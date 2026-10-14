@@ -42,15 +42,16 @@ Satu orang dapat memegang lebih dari satu peran internal pada tahap awal.
 ### 5.1 Alur klien
 
 1. Klien membuka halaman KOMPAS dari situs Cankonix tanpa login.
-2. Klien memilih satu atau lebih objek: **Web Application**, **API**, **Mobile Application**, atau **Infrastruktur**.
-3. Formulir menampilkan pertanyaan dasar dan pertanyaan khusus sesuai objek. Ada indikator langkah dan ringkasan jawaban sebelum dikirim.
-4. Sistem menampilkan kisaran estimasi, asumsi utama, apa yang termasuk, serta faktor yang dapat mengubah harga.
-5. Klien boleh meminta proposal dengan mengisi nama, perusahaan, email kerja, dan pilihan cara dihubungi. Persetujuan untuk dihubungi harus jelas.
-6. Sistem memberi nomor referensi dan tautan privat untuk melengkapi informasi. Tautan memiliki masa berlaku dan dapat dicabut.
-7. Setelah permintaan proposal, klien dapat mengisi detail tambahan secara bertahap. Kredensial, token, dan rahasia lain tidak diminta melalui formulir estimasi.
-8. Klien dapat memasukkan nomor tiket KMP baru pada halaman utama untuk membuka kembali permintaannya. Nomor tiket dibuat acak dengan kekuatan 128 bit, menjadi kode akses rahasia, dan berlaku 30 hari. Tiket lama yang pendek tetap memerlukan tautan privat; admin/sales dapat membuat kode akses baru untuk permintaan lama, yang mencabut akses sebelumnya. Saat tim menerbitkan penawaran, harga final, ringkasan cakupan, dan masa berlaku terlihat di halaman privat.
+2. Pada bagian atas halaman pertama, klien mengisi nama lengkap, nama perusahaan, dan email kerja. Jabatan serta nomor WhatsApp/telepon bersifat opsional.
+3. Klien memilih satu atau lebih objek: **Web Application**, **API**, **Mobile Application**, atau **Infrastruktur**.
+4. Formulir menampilkan pertanyaan dasar dan pertanyaan khusus sesuai objek. Ada indikator langkah dan ringkasan jawaban sebelum dikirim.
+5. Sistem menampilkan kisaran estimasi, asumsi utama, apa yang termasuk, serta faktor yang dapat mengubah harga. Data pemohon dapat ditinjau dan diubah dari halaman hasil.
+6. Klien boleh meminta proposal setelah menyetujui untuk dihubungi. Data kontak baru dikirim ke server ketika permintaan proposal dikirim.
+7. Sistem memberi nomor referensi dan tautan privat untuk melengkapi informasi. Tautan memiliki masa berlaku dan dapat dicabut.
+8. Setelah permintaan proposal, klien dapat mengisi detail tambahan secara bertahap. Kredensial, token, dan rahasia lain tidak diminta melalui formulir estimasi.
+9. Klien dapat memasukkan nomor tiket KMP baru pada halaman utama untuk membuka kembali permintaannya. Nomor tiket dibuat acak dengan kekuatan 128 bit, menjadi kode akses rahasia, dan berlaku 30 hari. Tiket lama yang pendek tetap memerlukan tautan privat; admin/sales dapat membuat kode akses baru untuk permintaan lama, yang mencabut akses sebelumnya. Saat tim menerbitkan penawaran, harga final, ringkasan cakupan, dan masa berlaku terlihat di halaman privat.
 
-Formulir awal tidak mensyaratkan akun. Simpan progres lokal pada perangkat agar isian tidak hilang saat halaman tertutup; penyimpanan server dan pemulihan lintas perangkat dimulai setelah klien meminta proposal dan memakai tautan privat.
+Formulir awal tidak mensyaratkan akun. Progres cakupan disimpan lokal pada perangkat; data kontak sementara disimpan selama tab masih terbuka. Penyimpanan server dan pemulihan lintas perangkat dimulai setelah klien meminta proposal dan memakai tautan privat.
 
 ### 5.2 Pertanyaan awal yang ditampilkan kepada klien
 
