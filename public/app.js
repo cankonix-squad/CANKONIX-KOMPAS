@@ -12,7 +12,7 @@ const money = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR
 const save = () => localStorage.setItem(draftKey,JSON.stringify({scope:state.scope}))
 async function api(url,body){const res=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const data=await res.json();if(!res.ok)throw new Error(data.error||'Terjadi kesalahan.');return data}
 function noticeError(message){const slot=document.querySelector('#message');if(slot)slot.textContent=message}
-function render(){
+function render(focusHeading=false){
   document.querySelector('#resume').hidden=state.step!==0 || Boolean(state.request)
   if(state.request){
     const modern=/^KMP-\d{4}-[A-F0-9]{32}$/.test(state.request.id) && state.request.token===state.request.id
@@ -21,10 +21,11 @@ function render(){
     if(ticketButton)ticketButton.onclick=()=>navigator.clipboard.writeText(state.request.id).then(()=>{ticketButton.textContent='Nomor tiket tersalin'}).catch(()=>{ticketButton.textContent='Gagal menyalin; coba lagi'})
     const link=document.querySelector('#private-link')
     if(link)link.onclick=()=>navigator.clipboard.writeText(`${location.origin}/?ref=${encodeURIComponent(state.request.id)}&token=${encodeURIComponent(state.request.token)}`).then(()=>{link.textContent='Tautan tersalin'}).catch(()=>{link.textContent='Gagal menyalin; coba lagi'})
+    if(focusHeading){const heading=app.querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus()}
     return
   }
   const labels=['Objek','Cakupan','Akses & jadwal','Hasil']
-  const steps=`<div class="steps">${labels.map((label,i)=>`<span class="step ${i===state.step?'active':''}">${i+1}. ${label}</span>`).join('')}</div>`
+  const steps=`<nav class="steps" aria-label="Tahapan formulir">${labels.map((label,i)=>`<span class="step ${i===state.step?'active':''}" ${i===state.step?'aria-current="step"':''}>${i+1}. ${label}</span>`).join('')}</nav>`
   let body=''
   if(state.step===0) body=`<h2>Objek apa yang ingin diuji?</h2><p class="muted">Pilih satu atau lebih. Detailnya bisa disesuaikan pada langkah berikutnya.</p><div class="choice-grid">${Object.entries(names).map(([key,label])=>`<label class="choice"><input type="checkbox" name="object" value="${key}" ${state.scope.objects.some(o=>o.type===key)?'checked':''}><div><strong>${label}</strong><span>${{web:'Website atau aplikasi yang dibuka lewat browser',api:'Layanan atau integrasi melalui endpoint',mobile:'Aplikasi Android atau iOS',infra:'Server, jaringan, atau alamat IP'}[key]}</span></div></label>`).join('')}</div>`
   if(state.step===1) body=`<h2>Berapa besar cakupannya?</h2><p class="muted">Isi perkiraan saja. Jika belum tahu jumlah fitur atau endpoint, pilih “Belum tahu”.</p>${state.scope.objects.map(o=>`<div class="object-row"><strong>${names[o.type]}</strong><label class="field">Jumlah objek<input type="number" min="1" max="10000" data-type="${o.type}" data-field="count" value="${escape(o.count||1)}"></label><label class="field">${sizeNames[o.type]}<input type="number" min="1" max="100000" placeholder="Belum tahu" data-type="${o.type}" data-field="size" value="${o.size==='unknown'?'':escape(o.size)}"></label></div>`).join('')}<div class="fields" style="margin-top:18px"><label class="field">Jumlah jenis akun/peran pengguna <small>Misalnya pengguna dan administrator. Kosongkan jika belum tahu.</small><input type="number" min="0" max="1000" id="roles" placeholder="Belum tahu" value="${state.scope.roles==='unknown'?'':escape(state.scope.roles)}"></label><label class="field">Metode pengujian<select id="method"><option value="unsure">Bantu tentukan</option><option value="black">Black Box — tanpa akun</option><option value="gray">Gray Box — dengan akun pengguna</option><option value="white">White Box — akses lebih lengkap</option></select></label></div>`
@@ -35,17 +36,18 @@ function render(){
   app.innerHTML=`${steps}<section class="card">${body}<p id="message" class="error" role="alert"></p><div class="actions">${state.step>0?'<button id="back" class="button secondary">Kembali</button>':'<span></span>'}${state.step<3?`<button id="next" class="button">${state.step===2?'Lihat hasil':'Lanjut'}</button>`:''}</div></section>`
   for(const key of ['method','environment','access','window','sharedTarget']){const el=document.querySelector(`#${key}`);if(el)el.value=state.scope[key] || 'unknown'}
   if(document.querySelector('#mobilePlatform')) document.querySelector('#mobilePlatform').value=state.scope.objects.find(o=>o.type==='mobile')?.platform || 'unknown'
-  document.querySelector('#back')?.addEventListener('click',()=>{state.step--;render()})
+  document.querySelector('#back')?.addEventListener('click',()=>{state.step--;render(true)})
   document.querySelector('#next')?.addEventListener('click',next)
   document.querySelector('#request')?.addEventListener('click',requestProposal)
+  if(focusHeading){const heading=app.querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus()}
 }
 async function next(){try{
   if(state.step===0){const selected=[...document.querySelectorAll('[name=object]:checked')].map(e=>e.value);if(!selected.length)throw new Error('Pilih setidaknya satu jenis objek.');state.scope.objects=selected.map(type=>state.scope.objects.find(o=>o.type===type)||{type,count:1,size:'unknown'});api('/api/events/start',{sessionId}).catch(()=>{})}
   if(state.step===1){state.scope.objects=state.scope.objects.map(o=>{const count=document.querySelector(`[data-type=${o.type}][data-field=count]`).value;const size=document.querySelector(`[data-type=${o.type}][data-field=size]`).value;return {...o,count:Number(count),size:size?Number(size):'unknown',...(o.type==='mobile'?{platform:document.querySelector('#mobilePlatform').value}:{})}});state.scope.roles=document.querySelector('#roles').value?Number(document.querySelector('#roles').value):'unknown';state.scope.method=document.querySelector('#method').value;state.scope.sharedTarget=document.querySelector('#sharedTarget')?.value || 'no'}
   if(state.step===2){for(const key of ['environment','access','window','notes'])state.scope[key]=document.querySelector(`#${key}`).value;const response=await api('/api/estimate',{...state.scope,sessionId});state.scope=response.scope;state.result=response.result}
-  save();state.step++;render()
+  save();state.step++;render(true)
 }catch(err){noticeError(err.message)}}
-async function requestProposal(){try{state.contact={name:document.querySelector('#name').value.trim(),company:document.querySelector('#company').value.trim(),email:document.querySelector('#email').value.trim()};state.consent=document.querySelector('#consent').checked;const key=sessionStorage.getItem('kompas-idempotency')||crypto.randomUUID();sessionStorage.setItem('kompas-idempotency',key);const data=await api('/api/requests',{scope:state.scope,contact:state.contact,consent:state.consent,idempotencyKey:key,website:document.querySelector('#website')?.value||''});state.request=data;localStorage.removeItem(draftKey);sessionStorage.removeItem('kompas-idempotency');render()}catch(err){noticeError(err.message)}}
+async function requestProposal(){try{state.contact={name:document.querySelector('#name').value.trim(),company:document.querySelector('#company').value.trim(),email:document.querySelector('#email').value.trim()};state.consent=document.querySelector('#consent').checked;const key=sessionStorage.getItem('kompas-idempotency')||crypto.randomUUID();sessionStorage.setItem('kompas-idempotency',key);const data=await api('/api/requests',{scope:state.scope,contact:state.contact,consent:state.consent,idempotencyKey:key,website:document.querySelector('#website')?.value||''});state.request=data;localStorage.removeItem(draftKey);sessionStorage.removeItem('kompas-idempotency');render(true)}catch(err){noticeError(err.message)}}
 function renderOffer(data){
   document.querySelector('#resume').hidden=true
   const expired=data.offer && data.offer.validUntil < new Date().toISOString().slice(0,10)

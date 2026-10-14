@@ -83,7 +83,8 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Gunakan logo Cankonix dari COMPLY, latar lingkaran gelap dan kartu abu-abu seperti halaman login Comply, serta header KOMPAS yang lebih besar.
 - [x] Terapkan **Helvetica 14 px** untuk teks biasa dan **16 px** untuk heading; gunakan `Arial, sans-serif` sebagai fallback.
 - [x] Tulis teks antarmuka dalam bahasa Indonesia yang mudah dipahami, sambil mempertahankan istilah assessment yang baku.
-- [ ] Periksa tampilan desktop dan ponsel, kontras warna, fokus keyboard, label input, serta pesan kesalahan.
+- [x] Periksa tampilan visual desktop dan ponsel; pemilik produk menyatakan keduanya aman pada 14 Oktober 2026.
+- [ ] Periksa kontras warna, fokus keyboard, label input, dan pesan kesalahan secara khusus untuk aksesibilitas. Fokus judul saat berpindah langkah dan penanda langkah aktif sudah ditambahkan; verifikasi langsung tetap diperlukan.
 
 **Selesai bila:** halaman KOMPAS terlihat satu keluarga dengan Comply dan seluruh alur klien nyaman dipakai di ponsel.
 
@@ -93,10 +94,10 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [ ] Uji contoh harga yang disetujui Cankonix. Batas minimum, perubahan versi aturan, dan pengiriman ganda sudah diuji dengan data sintetis.
 - [x] Uji hak akses admin, tautan privat, masa berlaku token, dan pencatatan aktivitas melalui API lokal.
 - [x] Uji metrik dashboard terhadap data permintaan sintetis yang dibuat saat pengujian.
-- [ ] Jalankan pemeriksaan langsung di browser pada desktop dan ponsel; tes API, pemeriksaan sintaks JavaScript, dan build Docker tersedia di CI/CD sudah lulus.
+- [x] Pemeriksaan visual langsung di browser desktop dan ponsel dinyatakan aman oleh pemilik produk; tes API, pemeriksaan sintaks JavaScript, dan build Docker di CI/CD juga lulus.
 - [x] Periksa file yang dilacak Git: `.env`, SQLite, benchmark privat, dan workbook sumber diabaikan; tidak ada data klien nyata yang dimasukkan ke repo.
 
-Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalankan dengan `npm test`. Pengujian browser desktop/ponsel dan contoh proyek Cankonix tetap diperlukan sebelum rilis.
+Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalankan dengan `npm test`. Contoh proyek Cankonix dan audit aksesibilitas khusus masih diperlukan.
 
 **Selesai bila:** kriteria penerimaan MVP di PRD terpenuhi dan hasil pengujian lokal dicatat.
 
@@ -111,6 +112,7 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, backup SQLite, deploy VPS, dan pemeriksaan HTTPS. Dua run berhasil pada 14 Oktober 2026.
 - [x] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal sintetis, akses tiket privat, login admin, dashboard, dan HTTPS.
 - [x] Verifikasi artefak backup SQLite sesudah deploy kedua; file ditemukan di VPS dan `PRAGMA integrity_check` menghasilkan `ok`.
-- [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.
+- [x] Periksa kondisi awal setelah rilis pada 14 Oktober 2026: container sehat, log aplikasi tanpa kesalahan, pipeline terakhir berhasil. Dashboard berisi satu permintaan sintetis bertanda “UJI SISTEM”, belum ada permintaan klien nyata.
+- [ ] Lanjutkan pemantauan log dan metrik berkala saat klien mulai menggunakan sistem; catat masalah dan tindak lanjutnya.
 
-**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Pemeriksaan browser desktop/ponsel dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
+**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Audit aksesibilitas khusus dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
