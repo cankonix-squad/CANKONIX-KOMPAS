@@ -42,6 +42,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
       assert.equal(estimate.status, 200)
       assert.equal(estimate.data.result.status, 'review')
       assert.equal(estimate.data.result.low, null)
+      assert.ok(estimate.data.result.reasons.every(reason => !reason.includes('Tarif internal')))
     }
     const shared = await call('/api/estimate', 'POST', { ...scope(), objects:[...scope().objects,{type:'api',count:1,size:10}], sharedTarget:'yes', sessionId:'session-shared-1234567890' })
     assert.equal(shared.data.result.days, null)

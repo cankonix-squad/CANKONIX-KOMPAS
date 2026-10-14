@@ -9,6 +9,7 @@ test('tanpa tarif yang disetujui, hasil wajib ditinjau', () => {
   const result = calculate(scope, null)
   assert.equal(result.status, 'review')
   assert.equal(result.low, null)
+  assert.deepEqual(result.reasons, [])
 })
 
 test('aturan menghasilkan kisaran yang dapat ditelusuri', () => {

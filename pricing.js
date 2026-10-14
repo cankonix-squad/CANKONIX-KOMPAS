@@ -66,7 +66,6 @@ export function validateRules(value) {
 
 export function calculate(scope, rules, version = null) {
   const needsReview = []
-  if (!rules) needsReview.push('Tarif internal belum diaktifkan.')
   if (scope.method === 'unsure') needsReview.push('Metode pengujian perlu ditentukan.')
   if (scope.access === 'unsure') needsReview.push('Cara akses target perlu ditentukan.')
   if (scope.access === 'onsite') needsReview.push('Kebutuhan onsite perlu dikonfirmasi.')
