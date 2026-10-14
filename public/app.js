@@ -45,6 +45,7 @@ function render(focusHeading=false){
   document.querySelector('#request')?.addEventListener('click',requestProposal)
   document.querySelector('#edit-contact')?.addEventListener('click',()=>{state.step=0;render(true)})
   document.querySelectorAll('[data-contact]').forEach(input=>input.addEventListener('input',()=>{state.contact=readContact();sessionStorage.setItem(contactKey,JSON.stringify(state.contact));input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');document.querySelector('#contact-error').textContent=''}))
+  document.querySelectorAll('[data-field],#roles').forEach(input=>input.addEventListener('input',()=>{input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');input.closest('label')?.querySelector('.scope-field-error')?.remove();document.querySelector('#message').textContent=''}))
   if(focusHeading){const heading=state.step===0?app.querySelector('#contact-details summary'):app.querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus()}
 }
 function validateContact(){
@@ -58,9 +59,26 @@ function validateContact(){
   sessionStorage.setItem(contactKey,JSON.stringify(contact))
   return true
 }
+function validateScopeInputs(){
+  const invalid=[...document.querySelectorAll('[data-field],#roles')].find(input=>(input.dataset.field==='count'&&!input.value)||(input.value&&!input.checkValidity()))
+  if(!invalid)return true
+  const message=invalid.dataset.field==='count'?'Jumlah objek harus angka bulat antara 1 dan 10.000.':invalid.dataset.field==='size'?'Ukuran cakupan harus angka bulat antara 1 dan 100.000, atau kosongkan jika belum tahu.':'Jumlah peran harus angka bulat antara 0 dan 1.000, atau kosongkan jika belum tahu.'
+  document.querySelector('.scope-field-error')?.remove()
+  document.querySelectorAll('[data-field],#roles').forEach(input=>{input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby')})
+  const feedback=document.createElement('small')
+  feedback.id='scope-field-error'
+  feedback.className='scope-field-error'
+  feedback.setAttribute('role','alert')
+  feedback.textContent=message
+  invalid.closest('label').append(feedback)
+  invalid.setAttribute('aria-invalid','true')
+  invalid.setAttribute('aria-describedby',feedback.id)
+  invalid.focus()
+  return false
+}
 async function next(){try{
   if(state.step===0){if(!validateContact())return;const selected=[...document.querySelectorAll('[name=object]:checked')].map(e=>e.value);if(!selected.length)throw new Error('Pilih setidaknya satu jenis objek.');state.scope.objects=selected.map(type=>state.scope.objects.find(o=>o.type===type)||{type,count:1,size:'unknown'});api('/api/events/start',{sessionId}).catch(()=>{})}
-  if(state.step===1){state.scope.objects=state.scope.objects.map(o=>{const count=document.querySelector(`[data-type=${o.type}][data-field=count]`).value;const size=document.querySelector(`[data-type=${o.type}][data-field=size]`).value;return {...o,count:Number(count),size:size?Number(size):'unknown',...(o.type==='mobile'?{platform:document.querySelector('#mobilePlatform').value}:{})}});state.scope.roles=document.querySelector('#roles').value?Number(document.querySelector('#roles').value):'unknown';state.scope.method=document.querySelector('#method').value;state.scope.sharedTarget=document.querySelector('#sharedTarget')?.value || 'no'}
+  if(state.step===1){if(!validateScopeInputs())return;state.scope.objects=state.scope.objects.map(o=>{const count=document.querySelector(`[data-type=${o.type}][data-field=count]`).value;const size=document.querySelector(`[data-type=${o.type}][data-field=size]`).value;return {...o,count:Number(count),size:size?Number(size):'unknown',...(o.type==='mobile'?{platform:document.querySelector('#mobilePlatform').value}:{})}});state.scope.roles=document.querySelector('#roles').value?Number(document.querySelector('#roles').value):'unknown';state.scope.method=document.querySelector('#method').value;state.scope.sharedTarget=document.querySelector('#sharedTarget')?.value || 'no'}
   if(state.step===2){for(const key of ['environment','access','window','notes'])state.scope[key]=document.querySelector(`#${key}`).value;const response=await api('/api/estimate',{...state.scope,sessionId});state.scope=response.scope;state.result=response.result}
   save();state.step++;render(true)
 }catch(err){noticeError(err.message)}}

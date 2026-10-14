@@ -100,6 +100,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Perbaiki navigasi keyboard tabel permintaan admin: tiap referensi memakai tombol yang dapat difokuskan; tabel akun memiliki header dan label peran yang jelas.
 - [x] Pindahkan fokus ke judul saat admin membuka detail permintaan atau kembali ke dashboard; umumkan pesan kesalahan login dan perubahan permintaan kepada pembaca layar.
 - [x] Catat audit kode dan rasio warna awal di `ACCESSIBILITY_AUDIT.md`; tandai kolom kontak yang salah agar pesan kesalahannya terhubung untuk pembaca layar.
+- [x] Validasi angka cakupan sebelum pindah langkah; tampilkan kesalahan di dekat kolom yang salah dan fokuskan kolom tersebut.
 - [ ] Periksa kontras warna, fokus keyboard, label input, dan pesan kesalahan secara khusus untuk aksesibilitas. Fokus judul saat berpindah langkah dan penanda langkah aktif sudah ditambahkan; verifikasi langsung tetap diperlukan.
 
 **Selesai bila:** halaman KOMPAS terlihat satu keluarga dengan Comply dan seluruh alur klien nyaman dipakai di ponsel.
