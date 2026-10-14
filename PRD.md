@@ -84,6 +84,8 @@ Admin login untuk melihat:
 - Ekspor data prospek dan ringkasan untuk pelaporan internal, sesuai hak akses.
 - Admin atau sales dapat menyimpan draf penawaran final dan menerbitkannya secara eksplisit. Draf tetap internal; penawaran yang diterbitkan terlihat pada tautan privat klien dan tercatat dalam riwayat.
 
+**Pengelolaan pengguna internal (tahap berikutnya):** akun produksi awal `admin@cankonix.com` menjadi pemilik sistem. Pemilik dapat membuat undangan sekali pakai untuk akun baru, memilih peran Admin, Sales, Reviewer, atau Pengelola harga, menonaktifkan akun, serta mencabut sesi aktifnya. Tautan undangan dapat disalin dan dibagikan secara privat sampai pengiriman email otomatis tersedia. Password pengguna disimpan sebagai hash dengan salt, tidak ditampilkan kembali setelah dibuat. Setiap perubahan akun dan peran dicatat dalam riwayat. Pemilik tidak dapat menonaktifkan akun pemilik terakhir. Pengguna biasa tidak dapat menaikkan perannya sendiri.
+
 Jumlah **pengunjung halaman** adalah metrik analitik situs yang terpisah dari jumlah **orang yang mulai mengisi**. Pengukuran “mulai” dilakukan saat pengguna berinteraksi dengan formulir; pengukuran “selesai” saat estimasi berhasil dibuat. Dashboard harus menjelaskan definisi metrik ini.
 
 ### 5.5 Pengaturan harga internal
