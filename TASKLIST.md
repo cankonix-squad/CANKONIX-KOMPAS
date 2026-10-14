@@ -105,12 +105,12 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Tinjau perubahan, buat commit lokal, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
 - [x] Push fondasi MVP yang lulus tes awal ke branch `main`; commit pertama `4950330` bukan kandidat rilis final.
 - [x] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
-- [x] Periksa sertifikat TLS domain KOMPAS; HTTPS valid dan container sehat. Verifikasi artefak backup pada deploy berikutnya masih diperlukan.
+- [x] Periksa sertifikat TLS domain KOMPAS; HTTPS valid dan container sehat.
 - [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
 - [x] Siapkan konfigurasi produksi di luar repo, migrasi database otomatis, prosedur deploy, health check, dan langkah rollback dalam `DEPLOYMENT.md`.
-- [x] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, deploy VPS, dan pemeriksaan HTTPS. Backup pada deploy kedua perlu diverifikasi.
+- [x] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, backup SQLite, deploy VPS, dan pemeriksaan HTTPS. Dua run berhasil pada 14 Oktober 2026.
 - [x] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal sintetis, akses tiket privat, login admin, dashboard, dan HTTPS.
-- [ ] Verifikasi artefak backup SQLite sesudah deploy kedua.
+- [x] Verifikasi artefak backup SQLite sesudah deploy kedua; file ditemukan di VPS dan `PRAGMA integrity_check` menghasilkan `ok`.
 - [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.
 
 **Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Pemeriksaan browser desktop/ponsel, pembatasan spam, dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
