@@ -60,10 +60,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - name: Uji issue peringatan
+      - name: Buat issue uji
+        id: create
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MONITOR_KIND: test
-        run: |
-          MONITOR_STATUS=failure node scripts/monitor-alert.mjs
-          MONITOR_STATUS=ok node scripts/monitor-alert.mjs
+          MONITOR_STATUS: failure
+        run: node scripts/monitor-alert.mjs
+      - name: Tutup issue uji
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MONITOR_KIND: test
+          MONITOR_STATUS: ok
+          MONITOR_ISSUE_NUMBER: ${{ steps.create.outputs.issue_number }}
+        run: node scripts/monitor-alert.mjs

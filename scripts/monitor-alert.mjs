@@ -1,3 +1,5 @@
+import fs from 'node:fs'
+
 const repository = process.env.GITHUB_REPOSITORY || ''
 const token = process.env.GITHUB_TOKEN || ''
 const kind = process.env.MONITOR_KIND || ''
@@ -27,15 +29,28 @@ const api = async (method, endpoint, body) => {
   return response.status === 204 ? null : response.json()
 }
 
+const explicitNumber = Number(process.env.MONITOR_ISSUE_NUMBER || 0)
 let existing = null
-for (let page = 1; page <= 20 && !existing; page++) {
-  const issues = await api('GET', `/issues?state=open&per_page=100&page=${page}`)
-  existing = issues.find(issue => !issue.pull_request && issue.title === title)
-  if (issues.length < 100) break
+if (explicitNumber) {
+  if (!Number.isSafeInteger(explicitNumber) || explicitNumber < 1) throw new Error('Nomor issue uji tidak valid.')
+  const issue = await api('GET', `/issues/${explicitNumber}`)
+  if (issue.title !== title) throw new Error('Issue yang akan ditutup tidak cocok dengan jenis peringatan.')
+  if (issue.state === 'open') existing = issue
+} else {
+  for (let page = 1; page <= 20 && !existing; page++) {
+    const issues = await api('GET', `/issues?state=open&per_page=100&page=${page}`)
+    existing = issues.find(issue => !issue.pull_request && issue.title === title)
+    if (issues.length < 100) break
+  }
+}
+
+const recordIssueNumber = number => {
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `issue_number=${number}\n`)
 }
 
 if (status === 'failure') {
   if (existing) {
+    recordIssueNumber(existing.number)
     console.log(`Peringatan sudah terbuka: #${existing.number}`)
   } else {
     const description = kind === 'test'
@@ -47,6 +62,7 @@ if (status === 'failure') {
       title,
       body: `${description}\n\nRun pemeriksaan: ${runUrl}\nWaktu UTC: ${new Date().toISOString()}\n\nIssue ini akan ditutup otomatis setelah pemeriksaan berikutnya berhasil.`
     })
+    recordIssueNumber(issue.number)
     console.log(`Peringatan dibuat: #${issue.number}`)
   }
 } else if (existing) {
