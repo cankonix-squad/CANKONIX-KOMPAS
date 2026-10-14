@@ -8,6 +8,7 @@
 - Kolom kontak yang gagal validasi ditandai `aria-invalid="true"`, dihubungkan dengan pesan melalui `aria-describedby`, dan menerima fokus. Penanda dihapus setelah kolom diperbaiki.
 - Angka jumlah objek, ukuran cakupan, dan peran diperiksa sebelum pindah langkah. Kesalahan tampil pada label kolom terkait, terhubung dengan `aria-describedby`, dan kolom yang salah menerima fokus.
 - Persetujuan kontak yang belum dicentang kini menampilkan pesan di dekat checkbox, menghubungkan pesan dengan `aria-describedby`, dan memfokuskan checkbox. Pesan dibersihkan saat pilihan diubah.
+- Jika belum ada objek yang dipilih, pesan muncul langsung setelah pilihan objek. Grup ditandai tidak valid, pesan terhubung ke checkbox pertama, dan fokus pindah ke pilihan tersebut.
 - Judul langkah klien dan judul detail admin menerima fokus setelah tampilan berpindah. Nomor permintaan admin berupa tombol yang dapat dijangkau dengan keyboard.
 - Tabel permintaan dan pengguna admin memiliki header kolom; kolom pilihan peran pengguna memiliki label aksesibel.
 - Aturan `:focus-visible` memberi garis fokus yang terlihat. Menu admin dan tombol memakai elemen interaktif asli.

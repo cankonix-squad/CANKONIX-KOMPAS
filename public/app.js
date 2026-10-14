@@ -45,6 +45,17 @@ function render(focusHeading=false){
   document.querySelector('#request')?.addEventListener('click',requestProposal)
   document.querySelector('#consent')?.addEventListener('change',event=>{state.consent=event.target.checked;event.target.removeAttribute('aria-invalid');event.target.removeAttribute('aria-describedby');document.querySelector('#consent-error').textContent=''})
   document.querySelector('#edit-contact')?.addEventListener('click',()=>{state.step=0;render(true)})
+  const objectGroup=document.querySelector('.choice-grid')
+  if(objectGroup){
+    objectGroup.setAttribute('role','group')
+    objectGroup.setAttribute('aria-label','Objek yang ingin diuji')
+    objectGroup.querySelectorAll('[name=object]').forEach(input=>input.addEventListener('change',()=>{
+      objectGroup.removeAttribute('aria-invalid')
+      objectGroup.removeAttribute('aria-describedby')
+      objectGroup.querySelector('[name=object]')?.removeAttribute('aria-describedby')
+      document.querySelector('#object-error')?.remove()
+    }))
+  }
   document.querySelectorAll('[data-contact]').forEach(input=>input.addEventListener('input',()=>{state.contact=readContact();sessionStorage.setItem(contactKey,JSON.stringify(state.contact));input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');document.querySelector('#contact-error').textContent=''}))
   document.querySelectorAll('[data-field],#roles').forEach(input=>input.addEventListener('input',()=>{input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');input.closest('label')?.querySelector('.scope-field-error')?.remove();document.querySelector('#message').textContent=''}))
   if(focusHeading){const heading=state.step===0?app.querySelector('#contact-details summary'):app.querySelector('h2');heading?.setAttribute('tabindex','-1');heading?.focus()}
@@ -78,7 +89,7 @@ function validateScopeInputs(){
   return false
 }
 async function next(){try{
-  if(state.step===0){if(!validateContact())return;const selected=[...document.querySelectorAll('[name=object]:checked')].map(e=>e.value);if(!selected.length)throw new Error('Pilih setidaknya satu jenis objek.');state.scope.objects=selected.map(type=>state.scope.objects.find(o=>o.type===type)||{type,count:1,size:'unknown'});api('/api/events/start',{sessionId}).catch(()=>{})}
+  if(state.step===0){if(!validateContact())return;const selected=[...document.querySelectorAll('[name=object]:checked')].map(e=>e.value);if(!selected.length){const group=document.querySelector('.choice-grid');let feedback=document.querySelector('#object-error');if(!feedback){feedback=document.createElement('p');feedback.id='object-error';feedback.className='error';feedback.setAttribute('role','alert');group.after(feedback)}feedback.textContent='Pilih setidaknya satu jenis objek.';group.setAttribute('aria-invalid','true');group.setAttribute('aria-describedby','object-error');const first=group.querySelector('[name=object]');first.setAttribute('aria-describedby','object-error');first.focus();return}state.scope.objects=selected.map(type=>state.scope.objects.find(o=>o.type===type)||{type,count:1,size:'unknown'});api('/api/events/start',{sessionId}).catch(()=>{})}
   if(state.step===1){if(!validateScopeInputs())return;state.scope.objects=state.scope.objects.map(o=>{const count=document.querySelector(`[data-type=${o.type}][data-field=count]`).value;const size=document.querySelector(`[data-type=${o.type}][data-field=size]`).value;return {...o,count:Number(count),size:size?Number(size):'unknown',...(o.type==='mobile'?{platform:document.querySelector('#mobilePlatform').value}:{})}});state.scope.roles=document.querySelector('#roles').value?Number(document.querySelector('#roles').value):'unknown';state.scope.method=document.querySelector('#method').value;state.scope.sharedTarget=document.querySelector('#sharedTarget')?.value || 'no'}
   if(state.step===2){for(const key of ['environment','access','window','notes'])state.scope[key]=document.querySelector(`#${key}`).value;const response=await api('/api/estimate',{...state.scope,sessionId});state.scope=response.scope;state.result=response.result}
   save();state.step++;render(true)
