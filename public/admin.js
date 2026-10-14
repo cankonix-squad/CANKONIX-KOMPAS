@@ -82,11 +82,11 @@ async function load() {
     if (range.to) query.set('to', range.to)
     user = await api('/api/admin/me')
     const [nextSummary, nextRules, nextUsers] = await Promise.all([
-      api(`/api/admin/summary?${query}`),
+      user.role === 'pricing' ? Promise.resolve(null) : api(`/api/admin/summary?${query}`),
       ['admin', 'pricing'].includes(user.role) ? api('/api/admin/rules') : Promise.resolve(null),
       user.owner ? api('/api/admin/users') : Promise.resolve(null)
     ])
-    summary = nextSummary
+    summary = nextSummary || { counts: {}, requests: [] }
     ruleData = nextRules
     userData = nextUsers
     dashboard()
@@ -98,15 +98,15 @@ async function load() {
 
 function dashboard() {
   const counts = summary.counts || {}
+  const canViewRequests = user.role !== 'pricing'
   root.innerHTML = `<div class="admin-layout"><nav class="admin-sidebar" aria-label="Menu admin">
     <strong>KOMPAS Admin</strong>
-    <a href="#admin-overview">Ringkasan</a>
-    <a href="#admin-requests">Permintaan</a>
+    ${canViewRequests ? '<a href="#admin-overview">Ringkasan</a><a href="#admin-requests">Permintaan</a>' : ''}
     ${userData ? '<a href="#admin-users">Pengguna internal</a>' : ''}
     ${ruleData ? '<a href="#admin-pricing">Aturan harga</a>' : ''}
     <a href="#admin-password">Ubah password</a>
     <button class="button secondary" id="logout">Keluar</button>
-  </nav><div class="admin-content"><div class="stats" id="admin-overview">
+  </nav><div class="admin-content">${canViewRequests ? `<div class="stats" id="admin-overview">
     <div class="card stat">Mulai mengisi<b>${counts.start || 0}</b></div>
     <div class="card stat">Estimasi selesai<b>${counts.complete || 0}</b></div>
     <div class="card stat">Minta proposal<b>${counts.proposal || 0}</b></div>
@@ -124,19 +124,21 @@ function dashboard() {
       <label class="field">Filter status<select id="status-filter"><option value="">Semua status</option>${['Baru', 'Perlu ditinjau', 'Dihubungi', 'Proposal dikirim', 'Menang', 'Tidak lanjut'].map(status => `<option>${status}</option>`).join('')}</select></label>
     </div>
     <div class="table-wrap"><table><thead><tr><th scope="col">Referensi</th><th scope="col">Klien</th><th scope="col">Objek</th><th scope="col">Hasil</th><th scope="col">Status</th><th scope="col">Tanggal</th></tr></thead><tbody id="rows"></tbody></table></div>
-  </section>
+  </section>` : ''}
   ${userData ? '<section class="card" id="admin-users"><h2>Pengguna internal</h2><div id="users-panel"></div></section>' : ''}
   ${ruleData ? `<section class="card" id="admin-pricing"><h2>Aturan harga internal</h2><div id="rules-form"></div></section>` : ''}
   <section class="card" id="admin-password"><h2>Ubah password saya</h2><p class="muted">Setelah diganti, semua sesi akun ini akan keluar. Masuk kembali dengan password baru.</p><div class="fields"><label class="field">Password saat ini<input id="current-password" type="password" autocomplete="current-password"></label><label class="field">Password baru<input id="new-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password baru<input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label></div><button class="button secondary" id="change-password">Simpan password baru</button><p class="error" id="password-error" role="alert"></p></section></div></div>`
 
   document.querySelector('#logout').onclick = async () => { await post('/api/admin/logout', {}); login() }
-  document.querySelector('#apply-range').onclick = () => {
-    range = { from: document.querySelector('#from').value, to: document.querySelector('#to').value }
-    load()
+  if (canViewRequests) {
+    document.querySelector('#apply-range').onclick = () => {
+      range = { from: document.querySelector('#from').value, to: document.querySelector('#to').value }
+      load()
+    }
+    document.querySelector('#search').oninput = renderRows
+    document.querySelector('#status-filter').onchange = renderRows
+    renderRows()
   }
-  document.querySelector('#search').oninput = renderRows
-  document.querySelector('#status-filter').onchange = renderRows
-  renderRows()
   if (userData) renderUsers()
   document.querySelector('#change-password').onclick = async () => {
     try {

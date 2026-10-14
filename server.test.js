@@ -22,7 +22,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
   const dataDir = mkdtempSync(path.join(tmpdir(), 'kompas-test-'))
   const port = await freePort()
   const base = `http://127.0.0.1:${port}`
-  const child = spawn(process.execPath, ['server.js'], { cwd: process.cwd(), env: { ...process.env, PORT:String(port), DATA_DIR:dataDir, ADMIN_EMAIL:'admin@test.local', ADMIN_PASSWORD:'test-password-strong-12345', SALES_EMAIL:'sales@test.local', SALES_PASSWORD:'sales-password-strong-12345', PRICING_SEED_JSON:JSON.stringify(rules), COOKIE_SECURE:'false', TRUST_PROXY:'true' }, stdio:'ignore' })
+  const child = spawn(process.execPath, ['server.js'], { cwd: process.cwd(), env: { ...process.env, PORT:String(port), DATA_DIR:dataDir, ADMIN_EMAIL:'admin@test.local', ADMIN_PASSWORD:'test-password-strong-12345', SALES_EMAIL:'sales@test.local', SALES_PASSWORD:'sales-password-strong-12345', PRICING_EMAIL:'pricing@test.local', PRICING_PASSWORD:'pricing-password-strong-12345', PRICING_SEED_JSON:JSON.stringify(rules), COOKIE_SECURE:'false', TRUST_PROXY:'true' }, stdio:'ignore' })
   const call = async (url, method = 'GET', body, cookie = '') => {
     const response = await fetch(base + url, { method, headers: { ...(body ? { 'content-type':'application/json' } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined })
     return { status:response.status, data:await response.json(), cookie:response.headers.get('set-cookie') }
@@ -123,6 +123,13 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.ok(detail.data.activity.some(item => item.action === 'details'))
     const salesLogin = await call('/api/admin/login', 'POST', { email:'sales@test.local', password:'sales-password-strong-12345' })
     assert.equal((await call('/api/admin/rules', 'GET', undefined, salesLogin.cookie.split(';')[0])).status, 403)
+    const pricingLogin = await call('/api/admin/login', 'POST', { email:'pricing@test.local', password:'pricing-password-strong-12345' })
+    const pricingCookie = pricingLogin.cookie.split(';')[0]
+    assert.equal(pricingLogin.status, 200)
+    assert.equal((await call('/api/admin/rules', 'GET', undefined, pricingCookie)).status, 200)
+    assert.equal((await call('/api/admin/summary', 'GET', undefined, pricingCookie)).status, 403)
+    assert.equal((await call(`/api/admin/requests/${request.data.id}`, 'GET', undefined, pricingCookie)).status, 403)
+    assert.equal((await call('/api/admin/export', 'GET', undefined, pricingCookie)).status, 403)
     assert.equal((await call('/api/admin/rules/preview', 'POST', rules)).status, 401)
     const preview = await call('/api/admin/rules/preview', 'POST', rules, adminCookie)
     assert.equal(preview.status, 200)

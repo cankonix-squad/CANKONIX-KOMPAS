@@ -79,6 +79,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 ## 5. Bangun dashboard admin
 
 - [x] Pisahkan hak akses sales/admin, reviewer teknis, dan pengelola harga melalui akun yang dikonfigurasi di lingkungan server.
+- [x] Batasi Pengelola harga ke aturan harga; daftar, detail, dan ekspor prospek ditolak oleh API dan tidak ditampilkan di dashboard peran tersebut.
 - [x] Tampilkan metrik “mulai”, “selesai”, dan “minta proposal” per rentang tanggal dengan definisi yang jelas.
 - [x] Buat daftar prospek, pencarian/filter, detail jawaban, estimasi, penanggung jawab, catatan, dan riwayat status.
 - [x] Sajikan cakupan awal dan detail klien di halaman permintaan admin sebagai poin berlabel yang mudah dibaca, termasuk nilai “Belum tahu” dan “Belum diisi”, tanpa menampilkan JSON.

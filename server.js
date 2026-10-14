@@ -270,6 +270,7 @@ const route = async (req, res) => {
       return json(res, 200, { ok: true })
     }
     if (req.method === 'GET' && pathname === '/api/admin/summary') {
+      if (!requireAdmin(req, res, ['admin', 'sales', 'reviewer'])) return
       const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? `${url.searchParams.get('from')}T00:00:00.000Z` : '1970-01-01T00:00:00.000Z'
       const to = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('to') || '') ? `${url.searchParams.get('to')}T23:59:59.999Z` : now()
       const events = db.prepare('SELECT kind,COUNT(*) count FROM events WHERE created_at BETWEEN ? AND ? GROUP BY kind').all(from, to)
@@ -287,6 +288,7 @@ const route = async (req, res) => {
     }
     const adminRequest = pathname.match(/^\/api\/admin\/requests\/(KMP-[A-Z0-9-]+)$/)
     if (adminRequest && req.method === 'GET') {
+      if (!requireAdmin(req, res, ['admin', 'sales', 'reviewer'])) return
       const row = db.prepare('SELECT * FROM requests WHERE id=?').get(adminRequest[1])
       if (!row) return error(res, 404, 'Permintaan tidak ditemukan.')
       const activity = db.prepare('SELECT action,detail,created_at FROM activity WHERE request_id=? ORDER BY id DESC').all(row.id)
