@@ -12,7 +12,7 @@ fs.mkdirSync(dataDir, { recursive: true })
 const db = new DatabaseSync(path.join(dataDir, 'kompas.sqlite'))
 db.exec(`PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY, kind TEXT NOT NULL, session_id TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS rules (version INTEGER PRIMARY KEY, value TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS rules (version INTEGER PRIMARY KEY, value TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'published', created_at TEXT NOT NULL, published_at TEXT);
 CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, token_expires_at TEXT NOT NULL, idempotency_key TEXT NOT NULL UNIQUE, contact TEXT NOT NULL, scope TEXT NOT NULL, result TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Baru', owner TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY, request_id TEXT NOT NULL, action TEXT NOT NULL, detail TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', role TEXT NOT NULL DEFAULT 'admin');
@@ -22,6 +22,12 @@ if (!db.prepare('PRAGMA table_info(requests)').all().some(column => column.name 
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'email')) db.exec("ALTER TABLE sessions ADD COLUMN email TEXT NOT NULL DEFAULT ''")
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'role')) db.exec("ALTER TABLE sessions ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
 if (!db.prepare('PRAGMA table_info(events)').all().some(column => column.name === 'session_id')) db.exec("ALTER TABLE events ADD COLUMN session_id TEXT NOT NULL DEFAULT ''")
+if (!db.prepare('PRAGMA table_info(rules)').all().some(column => column.name === 'status')) db.exec("ALTER TABLE rules ADD COLUMN status TEXT NOT NULL DEFAULT 'published'")
+if (!db.prepare('PRAGMA table_info(rules)').all().some(column => column.name === 'published_at')) db.exec("ALTER TABLE rules ADD COLUMN published_at TEXT")
+if (!db.prepare('SELECT 1 FROM rules LIMIT 1').get() && process.env.PRICING_SEED_JSON) {
+  const seed = validateRules(JSON.parse(process.env.PRICING_SEED_JSON))
+  db.prepare('INSERT INTO rules(version,value,status,created_at) VALUES(?,?,?,?)').run(1, JSON.stringify(seed), 'draft', new Date().toISOString())
+}
 
 const now = () => new Date().toISOString()
 const hash = value => crypto.createHash('sha256').update(value).digest('hex')
@@ -52,8 +58,13 @@ const accounts = [
 const secure = process.env.COOKIE_SECURE === 'true' ? '; Secure' : ''
 const sessionCookie = (value, age) => `kompas_session=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure}`
 const currentRules = () => {
-  const row = db.prepare('SELECT version,value FROM rules ORDER BY version DESC LIMIT 1').get()
+  const row = db.prepare("SELECT version,value FROM rules WHERE status='published' ORDER BY version DESC LIMIT 1").get()
   return row ? { version: row.version, rules: JSON.parse(row.value) } : { version: null, rules: null }
+}
+const latestDraft = () => {
+  const publishedVersion = currentRules().version || 0
+  const row = db.prepare("SELECT version,value FROM rules WHERE status='draft' AND version>? ORDER BY version DESC LIMIT 1").get(publishedVersion)
+  return row ? { version: row.version, rules: JSON.parse(row.value) } : null
 }
 function recordEvent(kind, sessionId) {
   if (!/^[a-zA-Z0-9_-]{16,100}$/.test(sessionId || '')) throw new Error('Sesi formulir tidak valid.')
@@ -172,14 +183,37 @@ const route = async (req, res) => {
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(adminRequest[1], 'updated', `Status: ${body.status}; penanggung jawab: ${owner}`, now())
       return json(res, 200, { ok: true })
     }
-    if (req.method === 'GET' && pathname === '/api/admin/rules') { if (!requireAdmin(req, res, ['admin', 'pricing'])) return; return json(res, 200, currentRules()) }
+    if (req.method === 'GET' && pathname === '/api/admin/rules') { if (!requireAdmin(req, res, ['admin', 'pricing'])) return; return json(res, 200, { published: currentRules(), draft: latestDraft() }) }
     if (req.method === 'POST' && pathname === '/api/admin/rules') {
       if (!requireAdmin(req, res, ['admin', 'pricing'])) return
       const rules = validateRules(await parseBody(req))
-      const version = (currentRules().version || 0) + 1
-      db.prepare('INSERT INTO rules(version,value,created_at) VALUES(?,?,?)').run(version, JSON.stringify(rules), now())
+      const version = (db.prepare('SELECT MAX(version) version FROM rules').get().version || 0) + 1
+      db.prepare('INSERT INTO rules(version,value,status,created_at) VALUES(?,?,?,?)').run(version, JSON.stringify(rules), 'draft', now())
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('PRICING', 'rules', `Draf versi ${version} disimpan oleh ${admin(req).email}`, now())
+      return json(res, 201, { version, rules, status: 'draft' })
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/rules/preview') {
+      if (!requireAdmin(req, res, ['admin', 'pricing'])) return
+      const rules = validateRules(await parseBody(req))
+      const scenarios = [
+        ['Web Black Box', 'web', 'black'], ['Web Gray Box', 'web', 'gray'],
+        ['Web White Box', 'web', 'white'], ['API Black Box', 'api', 'black'],
+        ['Mobile Gray Box', 'mobile', 'gray'], ['Infrastruktur Black Box', 'infra', 'black']
+      ]
+      const samples = scenarios.map(([name, type, method]) => {
+        const scope = validateScope({ objects: [{ type, count: 1, size: 10 }], method, roles: 1, environment: 'staging', access: 'internet', window: 'business' })
+        return { name, result: calculate(scope, rules) }
+      })
+      return json(res, 200, { samples })
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/rules/publish') {
+      if (!requireAdmin(req, res, ['admin', 'pricing'])) return
+      const version = Number((await parseBody(req)).version)
+      const draft = latestDraft()
+      if (!draft || version !== draft.version) throw new Error('Terbitkan draf terbaru setelah memeriksa nilainya.')
+      db.prepare("UPDATE rules SET status='published',published_at=? WHERE version=? AND status='draft'").run(now(), version)
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('PRICING', 'rules', `Versi ${version} diterbitkan oleh ${admin(req).email}`, now())
-      return json(res, 201, { version, rules })
+      return json(res, 200, { version, status: 'published' })
     }
     return error(res, 404, 'Alamat API tidak ditemukan.')
   }

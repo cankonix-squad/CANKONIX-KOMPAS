@@ -11,7 +11,9 @@ Memerlukan Node.js 24 atau lebih baru. Tidak ada langkah `npm install` karena ap
 3. Buka `http://localhost:4173/` untuk formulir dan `http://localhost:4173/admin` untuk dashboard.
 4. Jalankan `npm test` untuk menguji kalkulasi dan validasi.
 
-Data tersimpan dalam `data/kompas.sqlite`, yang diabaikan Git. Tanpa aturan harga aktif, hasil selalu **Perlu ditinjau**. Admin dapat mengaktifkan aturan harga setelah tarif internal disetujui. Jangan gunakan `.env.example` sebagai kredensial produksi.
+Data tersimpan dalam `data/kompas.sqlite`, yang diabaikan Git. `PRICING_SEED_JSON` pada `.env` dapat dipakai untuk membuat draf harga pada instalasi baru; kosongkan bila admin akan mengisi draf dari dashboard. [Referensi harga pasar](MARKET_REFERENCES.md) tidak menetapkan tarif Cankonix. Selama draf belum diterbitkan, hasil klien selalu **Perlu ditinjau**. Admin dapat mengubah draf lalu menerbitkan versinya setelah tarif internal disetujui. Jangan gunakan `.env.example` sebagai kredensial produksi.
+
+Di dashboard, admin dapat meninjau angka, memilih **Lihat contoh harga**, lalu **Simpan draf**. Tombol **Terbitkan draf untuk klien** memakai versi draf yang tersimpan; perubahan yang belum disimpan tidak ikut terbit. Setiap estimasi menyimpan versi aturan saat dihitung.
 
 Sebelum dipasang di domain HTTPS, set `COOKIE_SECURE=true`. Peran `sales` dan `reviewer` dapat meninjau serta memperbarui permintaan; peran `pricing` dapat mengubah aturan harga. Peran `admin` dapat keduanya.
 

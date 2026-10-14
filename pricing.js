@@ -39,8 +39,15 @@ export function validateRules(value) {
     if (!Number.isFinite(n) || n <= 0 || n > 365) throw new Error(`Hari dasar ${type} tidak valid.`)
     days[type] = n
   }
+  const methodDays = {}
+  for (const method of ['black', 'gray', 'white']) {
+    const n = Number(value.methodDays?.[method])
+    if (!Number.isFinite(n) || n < 0 || n > 365) throw new Error(`Tambahan hari metode ${method} tidak valid.`)
+    methodDays[method] = n
+  }
   return {
     days,
+    methodDays,
     rate: number('rate', 1),
     minimum: number('minimum'),
     uncertainty: number('uncertainty', 0, 0.5),
@@ -65,6 +72,7 @@ export function calculate(scope, rules, version = null) {
   if (scope.objects.length > 1) needsReview.push('Potensi pekerjaan yang tumpang tindih perlu ditinjau.')
   if (!rules) return { status: 'review', reasons: needsReview, days: null, low: null, high: null, rulesVersion: version }
   let days = scope.objects.reduce((sum, item) => sum + item.count * rules.days[item.type] + (item.size === 'unknown' ? 0 : Math.max(0, Math.ceil(item.size / rules.sizeUnit) - 1) * rules.sizeDays), 0)
+  days += rules.methodDays?.[scope.method] || 0
   if (typeof scope.roles === 'number') days += Math.max(0, scope.roles - 1) * rules.extraRoleDays
   if (scope.environment === 'production') days += rules.productionDays
   if (scope.window === 'after') days += rules.afterHoursDays
@@ -72,6 +80,6 @@ export function calculate(scope, rules, version = null) {
   days = Math.round(days * 10) / 10
   if (needsReview.length) return { status: 'review', reasons: needsReview, days, low: null, high: null, rulesVersion: version }
   const base = Math.max(rules.minimum, days * rules.rate)
-  const round = n => Math.round(n / 100000) * 100000
+  const round = n => Math.round(n / 100000 + 1e-9) * 100000
   return { status: 'estimate', reasons: [], days, low: round(Math.max(rules.minimum, base * (1 - rules.uncertainty))), high: round(Math.max(rules.minimum, base * (1 + rules.uncertainty))), rulesVersion: version }
 }

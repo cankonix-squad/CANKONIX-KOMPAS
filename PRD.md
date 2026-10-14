@@ -97,7 +97,7 @@ Rumus konseptual:
 
 `Kisaran biaya = usaha × tarif internal, dengan batas minimum dan rentang ketidakpastian`
 
-Angka tarif, bobot, batas kisaran, serta aturan diskon **belum ditetapkan** karena workbook sumber tidak menyediakan data harga atau realisasi usaha proyek. Sebelum kalkulator dipublikasikan, aturan harus dikalibrasi memakai riwayat proyek Cankonix atau keputusan komersial yang terdokumentasi. Reviewer teknis dapat mengubah estimasi beserta alasan; harga proposal final tetap memerlukan persetujuan internal.
+Workbook sumber tidak menyediakan data harga atau realisasi usaha proyek. Sumber pembanding publik tercatat di `MARKET_REFERENCES.md`; draf tarif harian Cankonix disimpan dalam konfigurasi/database internal dan bukan tarif final sampai ditinjau. Sebelum kalkulator harga dipublikasikan, admin meninjau biaya internal, mengubah draf bila perlu, lalu menerbitkan versinya. Penyimpanan draf saja tidak mengaktifkan harga publik. Harga proposal final tetap memerlukan persetujuan internal.
 
 ## 7. Persyaratan pengalaman dan bahasa
 
@@ -152,7 +152,7 @@ Fitur tersebut dapat dipertimbangkan setelah data penggunaan dan proses internal
 
 ## 11. Keputusan yang masih diperlukan
 
-1. **Tarif dan kalibrasi:** biaya minimum, tarif per hari kerja, target margin, serta data proyek terdahulu yang boleh digunakan.
+1. **Kalibrasi tarif:** draf biaya minimum dan tarif per hari kerja sudah ada; target margin, data proyek terdahulu, cakupan deliverable, retest, biaya perjalanan, dan perlakuan pajak masih perlu disepakati sebelum penerbitan harga.
 2. **Kebijakan harga publik:** apakah kisaran rupiah langsung ditampilkan untuk semua kasus atau kasus tertentu hanya menerima “perlu ditinjau”.
 3. **Proposal:** format proposal, siapa yang menyetujui harga final, dan jalur pengiriman kepada klien.
 4. **Integrasi akun:** KOMPAS ditargetkan pada `kompas.cankonix.com`; tentukan apakah login admin memakai akun Cankonix Comply yang sudah ada atau akun terpisah.

@@ -21,9 +21,10 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 
 - [ ] Finalkan daftar pertanyaan estimasi awal untuk Web Application, API, Mobile Application, dan Infrastruktur dari workbook sumber.
 - [ ] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar.
-- [ ] Tentukan tarif internal per hari kerja, usaha dasar per objek, tambahan usaha, batas minimum, rentang ketidakpastian, serta aturan pekerjaan yang tumpang tindih.
+- [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
+- [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
 - [ ] Kalibrasi aturan dengan contoh proyek Cankonix; catat siapa yang menyetujui versi pertama.
-- [ ] Tentukan kondisi yang menampilkan kisaran rupiah dan kondisi yang wajib ditinjau manual.
+- [x] Tentukan kondisi yang menampilkan kisaran rupiah dan kondisi yang wajib ditinjau manual; angka hanya tampil dari versi aturan yang sudah diterbitkan.
 - [ ] Tetapkan masa berlaku estimasi, kebijakan penyimpanan data prospek, dan proses persetujuan proposal final.
 
 **Selesai bila:** tabel input, aturan usaha, contoh hitung, dan keputusan harga publik dapat ditinjau tim bisnis serta teknis. Jangan mempublikasikan angka harga yang belum disetujui.
@@ -53,7 +54,7 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 ## 4. Bangun mesin estimasi dan penyimpanan
 
 - [x] Modelkan objek, jawaban, estimasi, permintaan proposal, status prospek, aturan harga, dan riwayat aktivitas.
-- [x] Implementasikan kalkulasi di sisi server memakai versi aturan yang tersimpan pada setiap estimasi.
+- [x] Implementasikan kalkulasi di sisi server memakai versi aturan yang tersimpan pada setiap estimasi, dengan draf awal yang tidak aktif bagi klien.
 - [ ] Cegah hitung ganda bila beberapa objek berbagi target/backend; tandai kasus yang butuh pemeriksaan manusia.
 - [x] Validasi angka dan pilihan di server; tangani jawaban kosong, “Belum tahu”, jumlah nol, dan input di luar batas.
 - [x] Pastikan pengiriman berulang tidak membuat permintaan proposal ganda.
@@ -67,7 +68,7 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 - [x] Tampilkan metrik “mulai”, “selesai”, dan “minta proposal” per rentang tanggal dengan definisi yang jelas.
 - [x] Buat daftar prospek, pencarian/filter, detail jawaban, estimasi, penanggung jawab, catatan, dan riwayat status.
 - [x] Implementasikan status Baru, Perlu ditinjau, Dihubungi, Proposal dikirim, Menang, dan Tidak lanjut.
-- [x] Batasi pengaturan harga menurut peran dan catat setiap perubahan; versi aturan sudah ada.
+- [x] Batasi pengaturan harga menurut peran dan catat setiap perubahan; admin dapat menyimpan draf lalu menerbitkannya secara terpisah.
 - [x] Sediakan ekspor CSV untuk admin/sales; akses tanpa login dan peran lain ditolak.
 
 **Selesai bila:** admin dapat memantau jumlah pengisi dan menindaklanjuti satu permintaan dari awal sampai keputusan akhir.
