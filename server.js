@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires_at TEX
 CREATE INDEX IF NOT EXISTS idx_events_kind_date ON events(kind, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_date ON requests(created_at);`)
 if (!db.prepare('PRAGMA table_info(requests)').all().some(column => column.name === 'details')) db.exec("ALTER TABLE requests ADD COLUMN details TEXT NOT NULL DEFAULT '{}'")
+for (const [column, definition] of [['offer_price', 'INTEGER'], ['offer_summary', "TEXT NOT NULL DEFAULT ''"], ['offer_valid_until', "TEXT NOT NULL DEFAULT ''"], ['offer_published_at', 'TEXT']]) {
+  if (!db.prepare('PRAGMA table_info(requests)').all().some(item => item.name === column)) db.exec(`ALTER TABLE requests ADD COLUMN ${column} ${definition}`)
+}
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'email')) db.exec("ALTER TABLE sessions ADD COLUMN email TEXT NOT NULL DEFAULT ''")
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'role')) db.exec("ALTER TABLE sessions ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
 if (!db.prepare('PRAGMA table_info(events)').all().some(column => column.name === 'session_id')) db.exec("ALTER TABLE events ADD COLUMN session_id TEXT NOT NULL DEFAULT ''")
@@ -122,9 +125,9 @@ const route = async (req, res) => {
     }
     const privateMatch = pathname.match(/^\/api\/requests\/(KMP-[A-Z0-9-]+)$/)
     if (privateMatch && ['GET', 'PATCH'].includes(req.method)) {
-      const row = db.prepare('SELECT id,token_hash,token_expires_at,contact,scope,result,details,status,created_at FROM requests WHERE id=?').get(privateMatch[1])
+      const row = db.prepare('SELECT id,token_hash,token_expires_at,contact,scope,result,details,status,created_at,offer_price,offer_summary,offer_valid_until,offer_published_at FROM requests WHERE id=?').get(privateMatch[1])
       if (!row || row.token_expires_at < now() || !crypto.timingSafeEqual(Buffer.from(row.token_hash), Buffer.from(hash(url.searchParams.get('token') || '')))) return error(res, 404, 'Tautan tidak tersedia atau sudah kedaluwarsa.')
-      if (req.method === 'GET') return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, createdAt: row.created_at })
+      if (req.method === 'GET') return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, createdAt: row.created_at, offer: row.offer_published_at ? { price: row.offer_price, summary: row.offer_summary, validUntil: row.offer_valid_until, publishedAt: row.offer_published_at } : null })
       if (req.method === 'PATCH') {
         const body = await parseBody(req)
         const clean = {}
@@ -169,18 +172,44 @@ const route = async (req, res) => {
       const row = db.prepare('SELECT * FROM requests WHERE id=?').get(adminRequest[1])
       if (!row) return error(res, 404, 'Permintaan tidak ditemukan.')
       const activity = db.prepare('SELECT action,detail,created_at FROM activity WHERE request_id=? ORDER BY id DESC').all(row.id)
-      return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, owner: row.owner, notes: row.notes, createdAt: row.created_at, activity })
+      return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, owner: row.owner, notes: row.notes, createdAt: row.created_at, offer: { price: row.offer_price, summary: row.offer_summary, validUntil: row.offer_valid_until, publishedAt: row.offer_published_at }, activity })
     }
     if (adminRequest && req.method === 'PATCH') {
       if (!requireAdmin(req, res, ['admin', 'sales', 'reviewer'])) return
       const body = await parseBody(req)
       const allowed = ['Baru', 'Perlu ditinjau', 'Dihubungi', 'Proposal dikirim', 'Menang', 'Tidak lanjut']
       if (!allowed.includes(body.status)) throw new Error('Status tidak valid.')
+      if (body.status === 'Proposal dikirim' && !db.prepare('SELECT offer_published_at FROM requests WHERE id=?').get(adminRequest[1])?.offer_published_at) throw new Error('Terbitkan penawaran sebelum mengubah status menjadi Proposal dikirim.')
       const owner = String(body.owner || '').trim().slice(0, 120)
       const notes = String(body.notes || '').trim().slice(0, 4000)
       const changed = db.prepare('UPDATE requests SET status=?,owner=?,notes=?,updated_at=? WHERE id=?').run(body.status, owner, notes, now(), adminRequest[1])
       if (!changed.changes) return error(res, 404, 'Permintaan tidak ditemukan.')
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(adminRequest[1], 'updated', `Status: ${body.status}; penanggung jawab: ${owner}`, now())
+      return json(res, 200, { ok: true })
+    }
+    const offerMatch = pathname.match(/^\/api\/admin\/requests\/(KMP-[A-Z0-9-]+)\/offer(\/publish)?$/)
+    if (offerMatch && req.method === 'POST') {
+      if (!requireAdmin(req, res, ['admin', 'sales'])) return
+      const row = db.prepare('SELECT offer_price,offer_summary,offer_valid_until,offer_published_at FROM requests WHERE id=?').get(offerMatch[1])
+      if (!row) return error(res, 404, 'Permintaan tidak ditemukan.')
+      if (row.offer_published_at) return error(res, 409, 'Penawaran sudah dikirim dan tidak dapat diubah dari formulir ini.')
+      if (offerMatch[2]) {
+        if (!row.offer_price || !row.offer_summary || !row.offer_valid_until) throw new Error('Simpan rincian penawaran sebelum mengirimnya.')
+        if (row.offer_valid_until < now().slice(0, 10)) throw new Error('Masa berlaku penawaran sudah lewat.')
+        const published = now()
+        db.prepare("UPDATE requests SET offer_published_at=?,status='Proposal dikirim',updated_at=? WHERE id=?").run(published, published, offerMatch[1])
+        db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(offerMatch[1], 'offer_published', `Penawaran Rp${row.offer_price} dikirim oleh ${admin(req).email}`, published)
+        return json(res, 200, { ok: true, publishedAt: published })
+      }
+      const body = await parseBody(req)
+      const price = Number(body.price)
+      const summary = String(body.summary || '').trim()
+      const validUntil = String(body.validUntil || '')
+      if (!Number.isSafeInteger(price) || price < 1 || price > 1000000000000) throw new Error('Harga penawaran tidak valid.')
+      if (summary.length < 20 || summary.length > 4000) throw new Error('Ringkasan penawaran harus 20–4.000 karakter.')
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(validUntil) || Number.isNaN(Date.parse(`${validUntil}T00:00:00Z`)) || validUntil < now().slice(0, 10)) throw new Error('Masa berlaku penawaran tidak valid.')
+      db.prepare('UPDATE requests SET offer_price=?,offer_summary=?,offer_valid_until=?,updated_at=? WHERE id=?').run(price, summary, validUntil, now(), offerMatch[1])
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(offerMatch[1], 'offer_draft', `Draf penawaran disimpan oleh ${admin(req).email}`, now())
       return json(res, 200, { ok: true })
     }
     if (req.method === 'GET' && pathname === '/api/admin/rules') { if (!requireAdmin(req, res, ['admin', 'pricing'])) return; return json(res, 200, { published: currentRules(), draft: latestDraft() }) }

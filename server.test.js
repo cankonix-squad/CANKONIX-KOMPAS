@@ -76,6 +76,18 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.ok(detail.data.activity.some(item => item.action === 'details'))
     const salesLogin = await call('/api/admin/login', 'POST', { email:'sales@test.local', password:'sales-password-strong-12345' })
     assert.equal((await call('/api/admin/rules', 'GET', undefined, salesLogin.cookie.split(';')[0])).status, 403)
+    assert.equal((await call('/api/admin/requests/' + request.data.id, 'PATCH', { status:'Proposal dikirim' }, adminCookie)).status, 400)
+    const offerUrl = `/api/admin/requests/${request.data.id}/offer`
+    const validUntil = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+    assert.equal((await call(offerUrl, 'POST', { price:25000000, summary:'Pentest aplikasi web dan laporan temuan lengkap.', validUntil })).status, 401)
+    assert.equal((await call(`${offerUrl}/publish`, 'POST', {}, adminCookie)).status, 400)
+    assert.equal((await call(offerUrl, 'POST', { price:25000000, summary:'Pentest aplikasi web dan laporan temuan lengkap.', validUntil }, salesLogin.cookie.split(';')[0])).status, 200)
+    assert.equal((await call(privateUrl)).data.offer, null)
+    assert.equal((await call(`${offerUrl}/publish`, 'POST', {}, salesLogin.cookie.split(';')[0])).status, 200)
+    const publishedOffer = await call(privateUrl)
+    assert.equal(publishedOffer.data.offer.price, 25000000)
+    assert.equal(publishedOffer.data.status, 'Proposal dikirim')
+    assert.equal((await call(offerUrl, 'POST', { price:1, summary:'Perubahan tanpa persetujuan tidak dapat diterbitkan.', validUntil }, adminCookie)).status, 409)
 
     const publish = await call('/api/admin/rules/publish', 'POST', { version:1 }, adminCookie)
     assert.equal(publish.status, 200)

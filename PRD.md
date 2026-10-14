@@ -48,6 +48,7 @@ Satu orang dapat memegang lebih dari satu peran internal pada tahap awal.
 5. Klien boleh meminta proposal dengan mengisi nama, perusahaan, email kerja, dan pilihan cara dihubungi. Persetujuan untuk dihubungi harus jelas.
 6. Sistem memberi nomor referensi dan tautan privat untuk melengkapi informasi. Tautan memiliki masa berlaku dan dapat dicabut.
 7. Setelah permintaan proposal, klien dapat mengisi detail tambahan secara bertahap. Kredensial, token, dan rahasia lain tidak diminta melalui formulir estimasi.
+8. Klien dapat menempel tautan privat lengkap pada halaman utama untuk membuka kembali permintaannya. Saat tim menerbitkan penawaran, harga final, ringkasan cakupan, dan masa berlaku terlihat di halaman privat. Nomor KMP saja tidak membuka data.
 
 Formulir awal tidak mensyaratkan akun. Simpan progres lokal pada perangkat agar isian tidak hilang saat halaman tertutup; penyimpanan server dan pemulihan lintas perangkat dimulai setelah klien meminta proposal dan memakai tautan privat.
 
@@ -80,6 +81,7 @@ Admin login untuk melihat:
 - Detail setiap permintaan: jawaban, versi aturan harga yang digunakan, estimasi, catatan internal, dan riwayat perubahan status.
 - Status: **Baru**, **Perlu ditinjau**, **Dihubungi**, **Proposal dikirim**, **Menang**, **Tidak lanjut**. Alasan “Tidak lanjut” dapat dicatat.
 - Ekspor data prospek dan ringkasan untuk pelaporan internal, sesuai hak akses.
+- Admin atau sales dapat menyimpan draf penawaran final dan menerbitkannya secara eksplisit. Draf tetap internal; penawaran yang diterbitkan terlihat pada tautan privat klien dan tercatat dalam riwayat.
 
 Jumlah **pengunjung halaman** adalah metrik analitik situs yang terpisah dari jumlah **orang yang mulai mengisi**. Pengukuran “mulai” dilakukan saat pengguna berinteraksi dengan formulir; pengukuran “selesai” saat estimasi berhasil dibuat. Dashboard harus menjelaskan definisi metrik ini.
 

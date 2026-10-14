@@ -15,6 +15,8 @@ Data tersimpan dalam `data/kompas.sqlite`, yang diabaikan Git. `PRICING_SEED_JSO
 
 Di dashboard, admin dapat meninjau angka, memilih **Lihat contoh harga**, lalu **Simpan draf**. Tombol **Terbitkan draf untuk klien** memakai versi draf yang tersimpan; perubahan yang belum disimpan tidak ikut terbit. Setiap estimasi menyimpan versi aturan saat dihitung.
 
+Klien dapat menempel tautan privat lengkap pada bagian bawah halaman utama untuk membuka kembali permintaannya. Nomor referensi KMP saja tidak memberi akses. Admin/sales dapat mengisi harga penawaran final, ringkasan cakupan, dan masa berlaku pada detail permintaan. **Simpan draf penawaran** hanya menyimpan untuk internal; **Kirim penawaran ke klien** menerbitkan isinya pada halaman privat. Aplikasi belum mengirim email otomatis, jadi tautan perlu disimpan dan dibagikan melalui proses komunikasi Cankonix.
+
 Sebelum dipasang di domain HTTPS, set `COOKIE_SECURE=true`. Peran `sales` dan `reviewer` dapat meninjau serta memperbarui permintaan; peran `pricing` dapat mengubah aturan harga. Peran `admin` dapat keduanya.
 
 ## Catatan rilis

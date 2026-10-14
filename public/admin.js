@@ -116,6 +116,13 @@ async function detail(id) {
       <label class="field">Penanggung jawab<input id="owner" maxlength="120" value="${escape(item.owner)}"></label></div>
       <label class="field">Catatan internal<textarea id="notes" maxlength="4000">${escape(item.notes)}</textarea></label>
       <button class="button" id="save">Simpan perubahan</button><p class="error" id="error"></p>` : ''}
+      ${['admin','sales'].includes(user.role) ? `<h2>Penawaran untuk klien</h2>
+      ${item.offer.publishedAt ? `<p class="notice">Penawaran sudah dikirim pada ${escape(item.offer.publishedAt)} dan dapat dilihat lewat tautan privat klien.</p>` : '<p class="notice warn">Draf penawaran hanya terlihat oleh admin. Periksa harga dan cakupan sebelum mengirim.</p>'}
+      <label class="field">Harga penawaran final (Rp)<input id="offer-price" type="number" min="1" max="1000000000000" value="${escape(item.offer.price ?? '')}" ${item.offer.publishedAt?'disabled':''}></label>
+      <label class="field">Ringkasan cakupan dan deliverable<textarea id="offer-summary" maxlength="4000" ${item.offer.publishedAt?'disabled':''}>${escape(item.offer.summary)}</textarea></label>
+      <label class="field">Berlaku sampai<input id="offer-valid" type="date" value="${escape(item.offer.validUntil)}" ${item.offer.publishedAt?'disabled':''}></label>
+      ${item.offer.publishedAt?'': '<div class="actions"><button class="button secondary" id="offer-save">Simpan draf penawaran</button><button class="button" id="offer-publish">Kirim penawaran ke klien</button></div>'}
+      <p class="error" id="offer-error" role="alert"></p>` : ''}
       <h2>Riwayat</h2><ul class="summary-list">${item.activity.map(entry => `<li>${new Date(entry.created_at).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('')}</ul>
     </section>`
     document.querySelector('#back').onclick = load
@@ -128,6 +135,21 @@ async function detail(id) {
         }) })
         await detail(id)
       } catch (err) { document.querySelector('#error').textContent = err.message }
+    }
+    if (['admin','sales'].includes(user.role) && !item.offer.publishedAt) {
+      document.querySelector('#offer-save').onclick = async () => {
+        try {
+          await post(`/api/admin/requests/${id}/offer`, { price:document.querySelector('#offer-price').value, summary:document.querySelector('#offer-summary').value, validUntil:document.querySelector('#offer-valid').value })
+          await detail(id)
+        } catch (err) { document.querySelector('#offer-error').textContent = err.message }
+      }
+      document.querySelector('#offer-publish').onclick = async () => {
+        try {
+          if (!confirm('Kirim penawaran yang sudah disimpan kepada klien melalui tautan privat?')) return
+          await post(`/api/admin/requests/${id}/offer/publish`, {})
+          await detail(id)
+        } catch (err) { document.querySelector('#offer-error').textContent = err.message }
+      }
     }
   } catch (err) {
     root.innerHTML = `<p class="error">${escape(err.message)}</p><button class="button secondary" id="back">Kembali</button>`
