@@ -18,3 +18,9 @@
 Pemeriksaan berikutnya: bedakan data uji dari prospek nyata di dashboard, pantau permintaan baru dan kesalahan aplikasi, lalu catat tindak lanjut tanpa menyalin data pribadi ke dokumen ini.
 
 Untuk snapshot agregat berikutnya, jalankan `docker compose -f docker-compose.prod.yml exec -T kompas node scripts/ops-snapshot.mjs` dari folder aplikasi VPS. Skrip membaca SQLite tanpa mengubah data dan menandai bahwa angka masih mencakup data uji. Periksa `/api/health` dan log container secara terpisah.
+
+### Uji pemulihan terisolasi
+
+- Backup `20261014T163806Z` disalin ke direktori sementara pada VPS dan dijalankan melalui image KOMPAS terpisah dengan `--network none`; volume produksi tidak dipasang.
+- Endpoint kesehatan merespons berhasil; `PRAGMA integrity_check` menghasilkan `ok`; salinan berisi 2 permintaan dan aturan harga terbit versi 1.
+- Container dan direktori sementara uji sudah dibersihkan. Prosedur dapat diulang lewat `scripts/restore-drill.sh`.

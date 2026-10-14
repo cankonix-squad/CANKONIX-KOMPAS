@@ -1,0 +1,69 @@
+name: KOMPAS Monitor
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      test_alert:
+        description: Uji pembuatan dan penutupan issue peringatan
+        type: boolean
+        default: false
+  workflow_run:
+    workflows: [KOMPAS CI/CD]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  health:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.test_alert)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Periksa HTTPS KOMPAS
+        id: health
+        run: |
+          response=$(curl --fail --silent --show-error --max-time 10 --retry 2 --retry-delay 2 https://kompas.cankonix.com/api/health)
+          test "$response" = '{"ok":true}'
+      - name: Buat peringatan jika layanan gagal
+        if: failure() && steps.health.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MONITOR_KIND: health
+          MONITOR_STATUS: failure
+        run: node scripts/monitor-alert.mjs
+      - name: Tutup peringatan jika layanan pulih
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MONITOR_KIND: health
+          MONITOR_STATUS: ok
+        run: node scripts/monitor-alert.mjs
+
+  pipeline:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Catat hasil pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MONITOR_KIND: pipeline
+          MONITOR_STATUS: ${{ github.event.workflow_run.conclusion == 'success' && 'ok' || 'failure' }}
+        run: node scripts/monitor-alert.mjs
+
+  alert_test:
+    if: github.event_name == 'workflow_dispatch' && inputs.test_alert
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Uji issue peringatan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MONITOR_KIND: test
+        run: |
+          MONITOR_STATUS=failure node scripts/monitor-alert.mjs
+          MONITOR_STATUS=ok node scripts/monitor-alert.mjs

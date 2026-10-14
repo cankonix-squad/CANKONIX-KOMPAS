@@ -142,6 +142,8 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Periksa kondisi awal setelah rilis pada 14 Oktober 2026: container sehat, log aplikasi tanpa kesalahan, pipeline terakhir berhasil. Dashboard berisi satu permintaan sintetis bertanda “UJI SISTEM”, belum ada permintaan klien nyata.
 - [x] Ulangi pemeriksaan kesehatan, log, dan angka agregat produksi pada 14 Oktober 2026; hasil dicatat di `OPERATIONS_LOG.md` tanpa data pribadi.
 - [x] Sediakan skrip snapshot operasional baca-saja untuk jumlah peristiwa, status permintaan, dan versi harga aktif tanpa menampilkan data pribadi.
+- [x] Buktikan backup SQLite terbaru dapat menjalankan KOMPAS pada container terpisah tanpa jaringan; periksa kesehatan dan integritas, lalu bersihkan salinan uji.
+- [ ] Aktifkan dan uji peringatan otomatis GitHub Issue untuk kegagalan kesehatan layanan dan pipeline; pastikan workflow terjadwal berjalan setelah deploy.
 - [ ] Lanjutkan pemantauan log dan metrik berkala saat klien mulai menggunakan sistem; catat masalah dan tindak lanjutnya.
 
 **Status rilis:** sistem dan kisaran harga otomatis sementara sudah live. Kondisi yang belum jelas tetap menampilkan “Perlu ditinjau”, dan penawaran final baru terlihat pada tiket setelah diterbitkan Admin/Sales. Audit aksesibilitas khusus dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.

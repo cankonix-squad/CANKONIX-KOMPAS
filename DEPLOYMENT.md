@@ -21,3 +21,11 @@ Setelah deploy, periksa formulir publik, permintaan proposal, login admin, dashb
 ## Pemulihan
 
 Untuk rollback kode setelah workflow selesai, jalankan ulang workflow pada commit sebelumnya atau kembalikan commit di `main`. Jika migrasi data bermasalah, hentikan container dan pulihkan isi volume dari backup terbaru yang dibuat sebelum deploy. Pemulihan database bersifat tindakan manual agar data baru tidak tertimpa tanpa pemeriksaan.
+
+Uji pemulihan tanpa menyentuh volume produksi: dari folder aplikasi VPS jalankan `sh scripts/restore-drill.sh`. Script memilih backup terbaru, menyalinnya ke direktori sementara, menjalankan image KOMPAS pada container terpisah tanpa jaringan, memeriksa `/api/health` dan `PRAGMA integrity_check`, lalu menghapus container serta salinan sementara. Hasil hanya menampilkan jumlah permintaan dan versi harga. Uji ini membuktikan backup dapat membuka aplikasi, tetapi tidak menjalankan pemulihan ke volume produksi.
+
+## Peringatan otomatis
+
+Workflow `KOMPAS Monitor` memeriksa `https://kompas.cankonix.com/api/health` setiap 15 menit (menit 7, 22, 37, dan 52 UTC) dan menerima hasil workflow `KOMPAS CI/CD` pada branch `main`. Jika layanan atau pipeline gagal, workflow membuka GitHub Issue per jenis gangguan; issue yang masih terbuka tidak digandakan. Pemeriksaan berhasil berikutnya menutup issue terkait. Detail issue hanya berisi URL run dan waktu, tanpa data klien atau rahasia. Jalankan workflow secara manual untuk uji kesehatan; opsi `test_alert` menguji pembuatan dan penutupan issue uji.
+
+Pantau [GitHub Issues](https://github.com/cankonix-squad/CANKONIX-KOMPAS/issues) dan aktifkan notifikasi repository pada akun penanggung jawab. GitHub Actions terjadwal dapat tertunda atau terlewat saat beban tinggi, sehingga ini bukan pemantauan real-time atau satu-satunya kanal insiden.
