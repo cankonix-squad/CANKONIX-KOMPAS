@@ -103,7 +103,7 @@ Rumus konseptual:
 
 `Kisaran biaya = usaha × tarif internal, dengan batas minimum dan rentang ketidakpastian`
 
-Workbook sumber tidak menyediakan data harga atau realisasi usaha proyek. Sumber pembanding publik tercatat di `MARKET_REFERENCES.md`; draf tarif harian Cankonix disimpan dalam konfigurasi/database internal dan bukan tarif final sampai ditinjau. Sebelum kalkulator harga dipublikasikan, admin meninjau biaya internal, mengubah draf bila perlu, lalu menerbitkan versinya. Penyimpanan draf saja tidak mengaktifkan harga publik. Harga proposal final tetap memerlukan persetujuan internal.
+Workbook sumber tidak menyediakan data harga atau realisasi usaha proyek. Sumber pembanding publik tercatat di `MARKET_REFERENCES.md`. Pemilik produk menyetujui tarif dasar sementara Rp6 juta per hari kerja dan minimum Rp20 juta; aturan versi 1 diterbitkan pada 14 Oktober 2026. Kisaran otomatis yang tampil kepada klien tetap indikatif. Kalibrasi lanjutan dengan biaya dan proyek nyata Cankonix masih diperlukan. Perubahan berikutnya dibuat sebagai draf dan baru memengaruhi hasil klien setelah diterbitkan. Harga proposal final tetap memerlukan peninjauan tim.
 
 ## 7. Persyaratan pengalaman dan bahasa
 
@@ -132,7 +132,7 @@ Kriteria penerimaan visual: saat halaman KOMPAS dan Comply dibuka berdampingan, 
 - Versi awal persetujuan kontak `v1-2026-10-14` menggunakan kalimat “Saya setuju dihubungi oleh Cankonix terkait permintaan proposal ini.” Keputusan masa simpan dan prosedur penghapusan dirinci sebagai usulan di `POLICY_DRAFT.md` sampai disetujui.
 - Tautan privat memakai token acak, masa berlaku, dan mekanisme pencabutan; jangan menaruh jawaban sensitif di URL.
 - Lindungi data saat dikirim dan disimpan. Catat aktivitas penting admin, termasuk perubahan status, harga, dan aturan kalkulasi.
-- Tetapkan kebijakan penyimpanan serta penghapusan data prospek sebelum peluncuran.
+- Tetapkan kebijakan penyimpanan serta penghapusan data prospek sebelum promosi luas ke klien; rancangan keputusan ada di `POLICY_DRAFT.md`.
 - Jangan menerima password, API key, token, atau kredensial pengujian melalui formulir publik. Mekanisme pertukaran akses pengujian ditentukan pada proses proyek.
 - Terapkan pembatasan permintaan dan pencegahan spam pada formulir publik tanpa mempersulit klien yang sah.
 
@@ -159,10 +159,10 @@ Fitur tersebut dapat dipertimbangkan setelah data penggunaan dan proses internal
 
 ## 11. Keputusan yang masih diperlukan
 
-1. **Kalibrasi tarif:** draf biaya minimum dan tarif per hari kerja sudah ada; target margin, data proyek terdahulu, cakupan deliverable, retest, biaya perjalanan, dan perlakuan pajak masih perlu disepakati sebelum penerbitan harga.
-2. **Kebijakan harga publik:** apakah kisaran rupiah langsung ditampilkan untuk semua kasus atau kasus tertentu hanya menerima “perlu ditinjau”.
+1. **Kalibrasi tarif lanjutan:** tarif sementara versi 1 sudah terbit; target margin, data proyek terdahulu, cakupan deliverable, retest, biaya perjalanan, dan perlakuan pajak masih perlu disepakati sebelum revisi berikutnya.
+2. **Kebijakan harga publik:** kisaran rupiah tampil untuk cakupan yang cukup jelas; kasus dengan metode, ukuran, akses, jadwal, atau target bersama yang belum jelas tetap menerima “Perlu ditinjau”. Tinjau batas aturan ini berdasarkan penggunaan nyata.
 3. **Proposal:** format proposal, siapa yang menyetujui harga final, dan jalur pengiriman kepada klien.
-4. **Integrasi akun:** KOMPAS ditargetkan pada `kompas.cankonix.com`; tentukan apakah login admin memakai akun Cankonix Comply yang sudah ada atau akun terpisah.
+4. **Integrasi akun:** KOMPAS memakai akun internal terpisah di `kompas.cankonix.com`; putuskan apakah integrasi dengan akun Cankonix Comply diperlukan di masa depan.
 5. **Data:** masa simpan prospek, kebijakan penghapusan, dan alat analitik situs yang dipilih.
 
 ## 12. Sumber awal

@@ -28,12 +28,12 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Terbitkan aturan harga sementara versi 1 melalui alur admin setelah memeriksa 12 contoh harga dasar dan uji estimasi publik di domain produksi.
 - [x] Siapkan lembar kalibrasi privat untuk biaya harian, margin, deliverable, retest, pekerjaan yang tumpang tindih, dan tiga proyek pembanding; isian bisnis masih menunggu Cankonix.
 - [x] Siapkan rancangan keputusan masa berlaku estimasi, penyimpanan prospek, dan persetujuan penawaran di `POLICY_DRAFT.md`; penerapan menunggu keputusan Cankonix.
-- [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
-- [ ] Kalibrasi aturan dengan contoh proyek Cankonix; catat siapa yang menyetujui versi pertama.
+- [ ] Kalibrasi lanjutan aturan yang sudah terbit dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih; revisi tarif melalui draf versi berikutnya.
+- [ ] Bandingkan aturan versi 1 dengan contoh proyek Cankonix; catat penanggung jawab kalibrasi dan penyetuju revisi berikutnya.
 - [x] Tentukan kondisi yang menampilkan kisaran rupiah dan kondisi yang wajib ditinjau manual; angka hanya tampil dari versi aturan yang sudah diterbitkan.
 - [ ] Tetapkan masa berlaku estimasi, kebijakan penyimpanan data prospek, dan proses persetujuan proposal final.
 
-**Selesai bila:** tabel input, aturan usaha, contoh hitung, dan keputusan harga publik dapat ditinjau tim bisnis serta teknis. Jangan mempublikasikan angka harga yang belum disetujui.
+**Selesai bila:** tabel input, aturan usaha, contoh hitung, dan keputusan harga publik dapat ditinjau tim bisnis serta teknis. Versi 1 adalah tarif sementara yang disetujui pemilik produk; setiap revisi perlu ditinjau sebelum diterbitkan.
 
 ## 2. Siapkan proyek lokal dan repo
 
