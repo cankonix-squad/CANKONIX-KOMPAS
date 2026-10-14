@@ -2,6 +2,30 @@ const root = document.querySelector('#admin')
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
 const money = value => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value)
 const focusView = () => { const heading = root.querySelector('h2'); if (heading) { heading.tabIndex = -1; heading.focus() } }
+const objectNames = { web: 'Web Application', api: 'API', mobile: 'Mobile Application', infra: 'Infrastruktur' }
+const sizeNames = { web: 'fitur utama', api: 'endpoint', mobile: 'fitur utama', infra: 'host/IP' }
+const readable = value => value === 'unknown' || value === undefined || value === null || value === '' ? 'Belum tahu' : String(value)
+const infoRow = (label, value) => `<div><dt>${escape(label)}</dt><dd>${escape(value)}</dd></div>`
+function renderScope(scope) {
+  const methods = { black: 'Black Box', gray: 'Gray Box', white: 'White Box', unsure: 'Bantu tentukan' }
+  const environments = { staging: 'Staging / pengujian', production: 'Production', other: 'Lainnya' }
+  const access = { internet: 'Melalui internet', vpn: 'Melalui VPN', onsite: 'Onsite', unsure: 'Belum tahu' }
+  const windows = { business: 'Jam kerja', after: 'Di luar jam kerja', discuss: 'Dijadwalkan bersama' }
+  const shared = { yes: 'Ya, ada target atau backend yang sama', no: 'Tidak, semuanya terpisah', unknown: 'Belum tahu' }
+  return `<ul class="scope-items">${scope.objects.map(object => `<li><strong>${escape(objectNames[object.type] || object.type)}</strong><span>${escape(readable(object.count))} objek · ${escape(readable(object.size))} ${escape(sizeNames[object.type] || 'unit cakupan')}${object.type === 'mobile' ? ` · Platform: ${escape({ android: 'Android', ios: 'iOS', both: 'Android dan iOS', unknown: 'Belum tahu' }[object.platform] || 'Belum tahu')}` : ''}</span></li>`).join('')}</ul><dl class="info-grid">
+    ${infoRow('Metode pengujian', methods[scope.method] || readable(scope.method))}
+    ${infoRow('Lingkungan', environments[scope.environment] || readable(scope.environment))}
+    ${infoRow('Cara akses', access[scope.access] || readable(scope.access))}
+    ${infoRow('Waktu pengujian', windows[scope.window] || readable(scope.window))}
+    ${infoRow('Jenis akun/peran pengguna', readable(scope.roles))}
+    ${scope.objects.length > 1 ? infoRow('Target atau backend bersama', shared[scope.sharedTarget] || 'Belum tahu') : ''}
+    ${scope.notes ? infoRow('Kebutuhan khusus', scope.notes) : ''}
+  </dl>`
+}
+function renderClientDetails(details) {
+  const labels = { targets: 'URL, IP, atau nama target', inScope: 'Fitur atau endpoint yang diuji', outOfScope: 'Bagian yang tidak diuji', documentation: 'Tautan dokumentasi', deadline: 'Target waktu atau batasan jadwal' }
+  return `<dl class="info-grid">${Object.entries(labels).map(([key, label]) => infoRow(label, details?.[key] || 'Belum diisi')).join('')}</dl>`
+}
 
 async function api(path, options = {}) {
   const response = await fetch(path, { credentials: 'same-origin', headers: { 'content-type': 'application/json' }, ...options })
@@ -181,8 +205,8 @@ async function detail(id) {
       <p>Hasil: <strong>${item.result.status === 'estimate' ? `${money(item.result.low)} – ${money(item.result.high)}` : 'Perlu ditinjau'}</strong> ${item.result.days !== null ? `· ${item.result.days} hari kerja` : ''}</p>
       <p>Versi aturan: ${item.result.rulesVersion ?? 'belum aktif'}</p>
       ${['admin','sales'].includes(user.role) ? `<div class="notice"><p>Klien dapat membuka permintaan dengan kode akses baru. Pembuatan ulang akan menonaktifkan kode dan tautan privat sebelumnya.</p><button class="button secondary" id="issue-code">Buat kode akses baru</button><p id="code-result" role="status"></p></div>` : ''}
-      <h2>Cakupan awal</h2><pre>${escape(JSON.stringify(item.scope, null, 2))}</pre>
-      <h2>Detail dari klien</h2><pre>${escape(JSON.stringify(item.details, null, 2))}</pre>
+      <h2>Cakupan awal</h2>${renderScope(item.scope)}
+      <h2>Detail dari klien</h2>${renderClientDetails(item.details)}
       ${user.role !== 'pricing' ? `<h2>Kelola permintaan</h2>
       <div class="fields"><label class="field">Status<select id="status">${['Baru', 'Perlu ditinjau', 'Dihubungi', 'Proposal dikirim', 'Menang', 'Tidak lanjut'].map(status => `<option ${status === item.status ? 'selected' : ''}>${status}</option>`).join('')}</select></label>
       <label class="field">Penanggung jawab<input id="owner" maxlength="120" value="${escape(item.owner)}"></label></div>
