@@ -62,6 +62,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal((await call(`/api/requests/${request.data.id}?token=wrong`)).status, 404)
     const privateUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(request.data.token)}`
     assert.equal((await call(privateUrl)).status, 200)
+    assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).data.id, request.data.id)
     assert.equal((await call(privateUrl, 'PATCH', { targets:'contoh.test' })).status, 200)
 
     assert.equal((await call('/api/admin/summary')).status, 401)
@@ -90,6 +91,13 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(publishedOffer.data.offer.price, 25000000)
     assert.equal(publishedOffer.data.status, 'Proposal dikirim')
     assert.equal((await call(offerUrl, 'POST', { price:1, summary:'Perubahan tanpa persetujuan tidak dapat diterbitkan.', validUntil }, adminCookie)).status, 409)
+    const reissued = await call(`/api/admin/requests/${request.data.id}/access-code`, 'POST', {}, adminCookie)
+    assert.match(reissued.data.code, /^KMP-\d{4}-[A-F0-9]{32}$/)
+    assert.equal((await call('/api/tickets/resolve', 'POST', { code:reissued.data.code })).data.id, request.data.id)
+    assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).status, 404)
+    assert.equal((await call(privateUrl)).status, 404)
+    const renewedUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(reissued.data.code)}`
+    assert.equal((await call(renewedUrl)).status, 200)
 
     const publish = await call('/api/admin/rules/publish', 'POST', { version:1 }, adminCookie)
     assert.equal(publish.status, 200)
@@ -113,9 +121,9 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(floor.data.result.low, 20000000)
     assert.equal(floor.data.result.high, 20000000)
     const db = new DatabaseSync(path.join(dataDir, 'kompas.sqlite'))
-    db.prepare('UPDATE requests SET token_expires_at=? WHERE id=?').run('2000-01-01T00:00:00.000Z', request.data.id)
+    db.prepare('UPDATE requests SET token_expires_at=?,access_code_expires_at=? WHERE id=?').run('2000-01-01T00:00:00.000Z', '2000-01-01T00:00:00.000Z', request.data.id)
     db.close()
-    assert.equal((await call(privateUrl)).status, 404)
+    assert.equal((await call(renewedUrl)).status, 404)
   } finally {
     if (child.exitCode === null && child.signalCode === null) {
       child.kill('SIGTERM')

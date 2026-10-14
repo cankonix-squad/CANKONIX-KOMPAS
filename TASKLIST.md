@@ -49,6 +49,7 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 - [x] Buat pengisian kontak dan persetujuan di tahap permintaan proposal, lalu berikan nomor referensi dan tautan privat untuk pendalaman.
 - [x] Sediakan bagian di halaman utama untuk memasukkan nomor tiket KMP baru dan membuka kembali permintaan; tautan privat lama tetap didukung.
 - [x] Gunakan nomor tiket baru dengan kode acak 128 bit sebagai akses rahasia selama 30 hari; tiket pendek lama tetap memerlukan token pada tautan privat.
+- [x] Sediakan pembuatan ulang kode akses oleh admin/sales untuk permintaan lama; kode dan tautan sebelumnya dicabut saat kode baru dibuat.
 - [x] Tampilkan penawaran final di halaman privat hanya setelah admin/sales menyimpan draf dan menerbitkannya.
 - [x] Pastikan formulir tidak meminta password, API key, token, atau kredensial pengujian.
 

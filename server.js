@@ -19,9 +19,10 @@ CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires_at TEX
 CREATE INDEX IF NOT EXISTS idx_events_kind_date ON events(kind, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_date ON requests(created_at);`)
 if (!db.prepare('PRAGMA table_info(requests)').all().some(column => column.name === 'details')) db.exec("ALTER TABLE requests ADD COLUMN details TEXT NOT NULL DEFAULT '{}'")
-for (const [column, definition] of [['offer_price', 'INTEGER'], ['offer_summary', "TEXT NOT NULL DEFAULT ''"], ['offer_valid_until', "TEXT NOT NULL DEFAULT ''"], ['offer_published_at', 'TEXT']]) {
+for (const [column, definition] of [['offer_price', 'INTEGER'], ['offer_summary', "TEXT NOT NULL DEFAULT ''"], ['offer_valid_until', "TEXT NOT NULL DEFAULT ''"], ['offer_published_at', 'TEXT'], ['access_code_hash', 'TEXT'], ['access_code_expires_at', 'TEXT']]) {
   if (!db.prepare('PRAGMA table_info(requests)').all().some(item => item.name === column)) db.exec(`ALTER TABLE requests ADD COLUMN ${column} ${definition}`)
 }
+db.exec('CREATE INDEX IF NOT EXISTS idx_requests_access_code ON requests(access_code_hash)')
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'email')) db.exec("ALTER TABLE sessions ADD COLUMN email TEXT NOT NULL DEFAULT ''")
 if (!db.prepare('PRAGMA table_info(sessions)').all().some(column => column.name === 'role')) db.exec("ALTER TABLE sessions ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'")
 if (!db.prepare('PRAGMA table_info(events)').all().some(column => column.name === 'session_id')) db.exec("ALTER TABLE events ADD COLUMN session_id TEXT NOT NULL DEFAULT ''")
@@ -110,23 +111,33 @@ const route = async (req, res) => {
       if (!contact.name || !contact.company || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email) || body.consent !== true) throw new Error('Lengkapi nama, perusahaan, email, dan persetujuan kontak.')
       const key = String(body.idempotencyKey || '')
       if (!/^[a-zA-Z0-9_-]{16,100}$/.test(key)) throw new Error('Kunci permintaan tidak valid.')
-      const existing = db.prepare('SELECT id FROM requests WHERE idempotency_key=?').get(key)
-      if (existing) return json(res, 200, { id: existing.id, ...( /^KMP-\d{4}-[A-F0-9]{32}$/.test(existing.id) ? { token: existing.id } : {}), duplicate: true })
+      const existing = db.prepare('SELECT id,token_hash,token_expires_at FROM requests WHERE idempotency_key=?').get(key)
+      if (existing) return json(res, 200, { id: existing.id, ...( /^KMP-\d{4}-[A-F0-9]{32}$/.test(existing.id) && existing.token_hash === hash(existing.id) && existing.token_expires_at > now() ? { token: existing.id } : {}), duplicate: true })
       const { version, rules } = currentRules()
       const result = calculate(scope, rules, version)
       const id = `KMP-${new Date().getFullYear()}-${crypto.randomBytes(16).toString('hex').toUpperCase()}`
       const token = id
       const created = now()
       const expires = new Date(Date.now() + 30 * 86400000).toISOString()
-      db.prepare('INSERT INTO requests(id,token_hash,token_expires_at,idempotency_key,contact,scope,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').run(id, hash(token), expires, key, JSON.stringify({ ...contact, consentAt: created }), JSON.stringify(scope), JSON.stringify(result), created, created)
+      db.prepare('INSERT INTO requests(id,token_hash,token_expires_at,access_code_hash,access_code_expires_at,idempotency_key,contact,scope,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(id, hash(token), expires, hash(id), expires, key, JSON.stringify({ ...contact, consentAt: created }), JSON.stringify(scope), JSON.stringify(result), created, created)
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(id, 'created', 'Permintaan proposal masuk', created)
       db.prepare('INSERT INTO events(kind,created_at) VALUES(?,?)').run('proposal', created)
       return json(res, 201, { id, token })
     }
+    if (req.method === 'POST' && pathname === '/api/tickets/resolve') {
+      const code = String((await parseBody(req)).code || '').trim().toUpperCase()
+      if (!/^KMP-\d{4}-[A-F0-9]{32}$/.test(code)) return error(res, 404, 'Nomor tiket tidak tersedia atau sudah kedaluwarsa.')
+      const row = db.prepare('SELECT id FROM requests WHERE access_code_hash=? AND access_code_expires_at>?').get(hash(code), now())
+      if (!row) return error(res, 404, 'Nomor tiket tidak tersedia atau sudah kedaluwarsa.')
+      return json(res, 200, { id: row.id })
+    }
     const privateMatch = pathname.match(/^\/api\/requests\/(KMP-[A-Z0-9-]+)$/)
     if (privateMatch && ['GET', 'PATCH'].includes(req.method)) {
-      const row = db.prepare('SELECT id,token_hash,token_expires_at,contact,scope,result,details,status,created_at,offer_price,offer_summary,offer_valid_until,offer_published_at FROM requests WHERE id=?').get(privateMatch[1])
-      if (!row || row.token_expires_at < now() || !crypto.timingSafeEqual(Buffer.from(row.token_hash), Buffer.from(hash(url.searchParams.get('token') || '')))) return error(res, 404, 'Tautan tidak tersedia atau sudah kedaluwarsa.')
+      const row = db.prepare('SELECT id,token_hash,token_expires_at,access_code_hash,access_code_expires_at,contact,scope,result,details,status,created_at,offer_price,offer_summary,offer_valid_until,offer_published_at FROM requests WHERE id=?').get(privateMatch[1])
+      const candidate = hash(url.searchParams.get('token') || '')
+      const validOriginal = row && row.token_expires_at >= now() && crypto.timingSafeEqual(Buffer.from(row.token_hash), Buffer.from(candidate))
+      const validCode = row?.access_code_hash && row.access_code_expires_at >= now() && crypto.timingSafeEqual(Buffer.from(row.access_code_hash), Buffer.from(candidate))
+      if (!validOriginal && !validCode) return error(res, 404, 'Tautan tidak tersedia atau sudah kedaluwarsa.')
       if (req.method === 'GET') return json(res, 200, { id: row.id, contact: JSON.parse(row.contact), scope: JSON.parse(row.scope), result: JSON.parse(row.result), details: JSON.parse(row.details), status: row.status, createdAt: row.created_at, offer: row.offer_published_at ? { price: row.offer_price, summary: row.offer_summary, validUntil: row.offer_valid_until, publishedAt: row.offer_published_at } : null })
       if (req.method === 'PATCH') {
         const body = await parseBody(req)
@@ -186,6 +197,16 @@ const route = async (req, res) => {
       if (!changed.changes) return error(res, 404, 'Permintaan tidak ditemukan.')
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(adminRequest[1], 'updated', `Status: ${body.status}; penanggung jawab: ${owner}`, now())
       return json(res, 200, { ok: true })
+    }
+    const accessMatch = pathname.match(/^\/api\/admin\/requests\/(KMP-[A-Z0-9-]+)\/access-code$/)
+    if (accessMatch && req.method === 'POST') {
+      if (!requireAdmin(req, res, ['admin', 'sales'])) return
+      if (!db.prepare('SELECT 1 FROM requests WHERE id=?').get(accessMatch[1])) return error(res, 404, 'Permintaan tidak ditemukan.')
+      const code = `KMP-${new Date().getFullYear()}-${crypto.randomBytes(16).toString('hex').toUpperCase()}`
+      const expiresAt = new Date(Date.now() + 30 * 86400000).toISOString()
+      db.prepare('UPDATE requests SET token_hash=?,token_expires_at=?,access_code_hash=?,access_code_expires_at=?,updated_at=? WHERE id=?').run(hash(code), expiresAt, hash(code), expiresAt, now(), accessMatch[1])
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(accessMatch[1], 'access_code_issued', `Kode akses baru dibuat oleh ${admin(req).email}`, now())
+      return json(res, 201, { code, expiresAt })
     }
     const offerMatch = pathname.match(/^\/api\/admin\/requests\/(KMP-[A-Z0-9-]+)\/offer(\/publish)?$/)
     if (offerMatch && req.method === 'POST') {

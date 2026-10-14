@@ -48,7 +48,7 @@ Satu orang dapat memegang lebih dari satu peran internal pada tahap awal.
 5. Klien boleh meminta proposal dengan mengisi nama, perusahaan, email kerja, dan pilihan cara dihubungi. Persetujuan untuk dihubungi harus jelas.
 6. Sistem memberi nomor referensi dan tautan privat untuk melengkapi informasi. Tautan memiliki masa berlaku dan dapat dicabut.
 7. Setelah permintaan proposal, klien dapat mengisi detail tambahan secara bertahap. Kredensial, token, dan rahasia lain tidak diminta melalui formulir estimasi.
-8. Klien dapat memasukkan nomor tiket KMP baru pada halaman utama untuk membuka kembali permintaannya. Nomor tiket dibuat acak dengan kekuatan 128 bit, menjadi kode akses rahasia, dan berlaku 30 hari. Tiket lama yang pendek tetap memerlukan tautan privat. Saat tim menerbitkan penawaran, harga final, ringkasan cakupan, dan masa berlaku terlihat di halaman privat.
+8. Klien dapat memasukkan nomor tiket KMP baru pada halaman utama untuk membuka kembali permintaannya. Nomor tiket dibuat acak dengan kekuatan 128 bit, menjadi kode akses rahasia, dan berlaku 30 hari. Tiket lama yang pendek tetap memerlukan tautan privat; admin/sales dapat membuat kode akses baru untuk permintaan lama, yang mencabut akses sebelumnya. Saat tim menerbitkan penawaran, harga final, ringkasan cakupan, dan masa berlaku terlihat di halaman privat.
 
 Formulir awal tidak mensyaratkan akun. Simpan progres lokal pada perangkat agar isian tidak hilang saat halaman tertutup; penyimpanan server dan pemulihan lintas perangkat dimulai setelah klien meminta proposal dan memakai tautan privat.
 

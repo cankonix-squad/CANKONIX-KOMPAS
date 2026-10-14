@@ -109,6 +109,7 @@ async function detail(id) {
       <p>${escape(item.contact.name)} · <a href="mailto:${escape(item.contact.email)}">${escape(item.contact.email)}</a></p>
       <p>Hasil: <strong>${item.result.status === 'estimate' ? `${money(item.result.low)} – ${money(item.result.high)}` : 'Perlu ditinjau'}</strong> ${item.result.days !== null ? `· ${item.result.days} hari kerja` : ''}</p>
       <p>Versi aturan: ${item.result.rulesVersion ?? 'belum aktif'}</p>
+      ${['admin','sales'].includes(user.role) ? `<div class="notice"><p>Klien dapat membuka permintaan dengan kode akses baru. Pembuatan ulang akan menonaktifkan kode dan tautan privat sebelumnya.</p><button class="button secondary" id="issue-code">Buat kode akses baru</button><p id="code-result" role="status"></p></div>` : ''}
       <h2>Cakupan awal</h2><pre>${escape(JSON.stringify(item.scope, null, 2))}</pre>
       <h2>Detail dari klien</h2><pre>${escape(JSON.stringify(item.details, null, 2))}</pre>
       ${user.role !== 'pricing' ? `<h2>Kelola permintaan</h2>
@@ -126,6 +127,13 @@ async function detail(id) {
       <h2>Riwayat</h2><ul class="summary-list">${item.activity.map(entry => `<li>${new Date(entry.created_at).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('')}</ul>
     </section>`
     document.querySelector('#back').onclick = load
+    if (['admin','sales'].includes(user.role)) document.querySelector('#issue-code').onclick = async () => {
+      try {
+        if (!confirm('Buat kode akses baru untuk klien? Kode akses sebelumnya tidak dapat dipakai lagi.')) return
+        const value = await post(`/api/admin/requests/${id}/access-code`, {})
+        document.querySelector('#code-result').innerHTML = `Kode baru (salin sekarang): <strong>${escape(value.code)}</strong><br>Berlaku sampai ${escape(value.expiresAt.slice(0,10))}. Bagikan secara privat kepada klien.`
+      } catch (err) { document.querySelector('#code-result').textContent = err.message }
+    }
     if (user.role !== 'pricing') document.querySelector('#save').onclick = async () => {
       try {
         await api(`/api/admin/requests/${id}`, { method: 'PATCH', body: JSON.stringify({
