@@ -90,6 +90,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Terapkan **Helvetica 14 px** untuk teks biasa dan **16 px** untuk heading; gunakan `Arial, sans-serif` sebagai fallback.
 - [x] Tulis teks antarmuka dalam bahasa Indonesia yang mudah dipahami, sambil mempertahankan istilah assessment yang baku.
 - [x] Periksa tampilan visual desktop dan ponsel; pemilik produk menyatakan keduanya aman pada 14 Oktober 2026.
+- [x] Perbaiki navigasi keyboard tabel permintaan admin: tiap referensi memakai tombol yang dapat difokuskan; tabel akun memiliki header dan label peran yang jelas.
 - [ ] Periksa kontras warna, fokus keyboard, label input, dan pesan kesalahan secara khusus untuk aksesibilitas. Fokus judul saat berpindah langkah dan penanda langkah aktif sudah ditambahkan; verifikasi langsung tetap diperlukan.
 
 **Selesai bila:** halaman KOMPAS terlihat satu keluarga dengan Comply dan seluruh alur klien nyaman dipakai di ponsel.

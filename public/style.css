@@ -43,5 +43,7 @@ a{color:#a8c8ff}
 [hidden]{display:none!important}
 .honeypot{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .user-actions{display:flex;flex-wrap:wrap;gap:6px}.user-actions .button{padding:8px 10px}
+.table-link{font:inherit;font-weight:700;color:#a8c8ff;background:none;border:0;padding:4px 0;text-align:left;text-decoration:underline;cursor:pointer}
+.table-link:hover{text-decoration-thickness:2px}
 .contact-card summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;font-size:16px;font-weight:700;color:#fff}.contact-card summary::-webkit-details-marker{display:none}.contact-card summary::after{content:'⌄';font-size:22px;line-height:1;transition:transform .2s}.contact-card:not([open]) summary::after{transform:rotate(-90deg)}.contact-card[open] summary{margin-bottom:12px}
 @media(max-width:700px){.site-header{height:68px}.brand{font-size:16px}.brand img{height:34px;max-width:140px}}

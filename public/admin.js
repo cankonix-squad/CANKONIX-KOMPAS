@@ -36,7 +36,7 @@ function login(message = '') {
     <h2>Masuk admin</h2>
     <label class="field">Email<input id="login-email" type="email" autocomplete="username"></label>
     <label class="field">Password<input id="login-password" type="password" autocomplete="current-password"></label>
-    <p class="error" id="login-error">${escape(message)}</p>
+    <p class="error" id="login-error" role="alert">${escape(message)}</p>
     <button class="button" id="login-button">Masuk</button>
   </section>`
   document.querySelector('#login-button').onclick = async () => {
@@ -90,7 +90,7 @@ function dashboard() {
       <label class="field">Cari permintaan<input id="search" placeholder="Nama, perusahaan, atau nomor referensi"></label>
       <label class="field">Filter status<select id="status-filter"><option value="">Semua status</option>${['Baru', 'Perlu ditinjau', 'Dihubungi', 'Proposal dikirim', 'Menang', 'Tidak lanjut'].map(status => `<option>${status}</option>`).join('')}</select></label>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>Referensi</th><th>Klien</th><th>Objek</th><th>Hasil</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th scope="col">Referensi</th><th scope="col">Klien</th><th scope="col">Objek</th><th scope="col">Hasil</th><th scope="col">Status</th><th scope="col">Tanggal</th></tr></thead><tbody id="rows"></tbody></table></div>
   </section>
   ${userData ? '<section class="card"><h2>Pengguna internal</h2><div id="users-panel"></div></section>' : ''}
   <section class="card"><h2>Ubah password saya</h2><p class="muted">Setelah diganti, semua sesi akun ini akan keluar. Masuk kembali dengan password baru.</p><div class="fields"><label class="field">Password saat ini<input id="current-password" type="password" autocomplete="current-password"></label><label class="field">Password baru<input id="new-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password baru<input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label></div><button class="button secondary" id="change-password">Simpan password baru</button><p class="error" id="password-error" role="alert"></p></section>
@@ -121,7 +121,7 @@ function renderUsers() {
   document.querySelector('#users-panel').innerHTML = `<p class="muted">Hanya pemilik sistem yang dapat mengelola akun. Undangan berlaku 24 jam dan tautannya ditampilkan sekali.</p>
     <div class="fields"><label class="field">Email pengguna baru<input id="new-user-email" type="email" autocomplete="off" placeholder="nama@cankonix.com"></label><label class="field">Peran<select id="new-user-role">${options}</select></label></div>
     <button class="button" id="invite-user">Buat undangan</button><p id="invite-result" role="status"></p><p id="users-error" class="error" role="alert"></p>
-    <div class="table-wrap"><table><thead><tr><th>Email</th><th>Peran</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${userData.users.map(item => `<tr><td>${escape(item.email)}${item.owner ? ' · Pemilik' : ''}</td><td>${item.owner ? escape(roles[item.role]) : `<select class="admin-filter" data-role="${escape(item.email)}">${Object.entries(roles).map(([value, label]) => `<option value="${value}" ${value === item.role ? 'selected' : ''}>${label}</option>`).join('')}</select>`}</td><td>${item.status === 'active' ? 'Aktif' : item.status === 'pending' ? `Menunggu aktivasi sampai ${escape(item.inviteExpiresAt?.slice(0, 10) || '-')}` : 'Nonaktif'}</td><td>${item.owner ? 'Akun pemilik' : item.status === 'active' ? `<div class="user-actions"><button class="button secondary" data-action="role" data-email="${escape(item.email)}">Simpan peran</button><button class="button secondary" data-action="sessions" data-email="${escape(item.email)}">Cabut sesi</button><button class="button secondary" data-action="disable" data-email="${escape(item.email)}">Nonaktifkan</button></div>` : `<button class="button secondary" data-action="reinvite" data-email="${escape(item.email)}">Buat undangan baru</button>`}</td></tr>`).join('')}</tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th scope="col">Email</th><th scope="col">Peran</th><th scope="col">Status</th><th scope="col">Tindakan</th></tr></thead><tbody>${userData.users.map(item => `<tr><th scope="row">${escape(item.email)}${item.owner ? ' · Pemilik' : ''}</th><td>${item.owner ? escape(roles[item.role]) : `<select class="admin-filter" data-role="${escape(item.email)}" aria-label="Peran ${escape(item.email)}">${Object.entries(roles).map(([value, label]) => `<option value="${value}" ${value === item.role ? 'selected' : ''}>${label}</option>`).join('')}</select>`}</td><td>${item.status === 'active' ? 'Aktif' : item.status === 'pending' ? `Menunggu aktivasi sampai ${escape(item.inviteExpiresAt?.slice(0, 10) || '-')}` : 'Nonaktif'}</td><td>${item.owner ? 'Akun pemilik' : item.status === 'active' ? `<div class="user-actions"><button class="button secondary" data-action="role" data-email="${escape(item.email)}">Simpan peran</button><button class="button secondary" data-action="sessions" data-email="${escape(item.email)}">Cabut sesi</button><button class="button secondary" data-action="disable" data-email="${escape(item.email)}">Nonaktifkan</button></div>` : `<button class="button secondary" data-action="reinvite" data-email="${escape(item.email)}">Buat undangan baru</button>`}</td></tr>`).join('')}</tbody></table></div>
     <details><summary>Riwayat perubahan pengguna</summary><ul class="summary-list">${userData.activity.length ? userData.activity.map(entry => `<li>${new Date(entry.createdAt).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('') : '<li>Belum ada perubahan.</li>'}</ul></details>`
   const invite = async (email, role) => {
     const value = await post('/api/admin/users/invite', { email, role })
@@ -152,13 +152,13 @@ function renderRows() {
   const query = (document.querySelector('#search')?.value || '').toLowerCase()
   const status = document.querySelector('#status-filter')?.value || ''
   const rows = summary.requests.filter(item => `${item.id} ${item.contact.name} ${item.contact.company}`.toLowerCase().includes(query) && (!status || item.status === status))
-  document.querySelector('#rows').innerHTML = rows.length ? rows.map(item => `<tr data-id="${item.id}">
-    <td>${item.id}</td><td><strong>${escape(item.contact.company)}</strong><br>${escape(item.contact.name)}</td>
+  document.querySelector('#rows').innerHTML = rows.length ? rows.map(item => `<tr>
+    <th scope="row"><button type="button" class="table-link" data-id="${escape(item.id)}" aria-label="Buka permintaan ${escape(item.id)} dari ${escape(item.contact.company)}">${escape(item.id)}</button></th><td><strong>${escape(item.contact.company)}</strong><br>${escape(item.contact.name)}</td>
     <td>${item.scope.objects.map(object => escape(object.type)).join(', ')}</td>
     <td>${item.result.status === 'estimate' ? `${money(item.result.low)} – ${money(item.result.high)}` : 'Perlu ditinjau'}</td>
     <td><span class="tag">${escape(item.status)}</span></td><td>${new Date(item.createdAt).toLocaleDateString('id-ID')}</td>
   </tr>`).join('') : '<tr><td colspan="6">Belum ada permintaan.</td></tr>'
-  document.querySelectorAll('tr[data-id]').forEach(row => { row.onclick = () => detail(row.dataset.id) })
+  document.querySelectorAll('button[data-id]').forEach(button => { button.onclick = () => detail(button.dataset.id) })
 }
 
 async function detail(id) {
