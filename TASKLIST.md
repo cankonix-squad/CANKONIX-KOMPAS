@@ -1,7 +1,7 @@
 # Tasklist KOMPAS
 
 **Acuan produk:** [PRD.md](PRD.md)  
-**Status:** MVP sudah live melalui CI/CD; penyempurnaan produk dan persetujuan harga masih berjalan
+**Status:** MVP sudah live melalui CI/CD; tarif dasar sementara disetujui, penerbitan harga klien dan penyempurnaan produk masih berjalan
 **Tanggal:** 14 Oktober 2026
 
 ## Lokasi dan target rilis
@@ -17,11 +17,14 @@
 
 DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS melalui Docker Compose dan Traefik pada jaringan `cankonix-proxy`. Sertifikat HTTPS valid dan `/api/health` merespons 200 pada 14 Oktober 2026. Repo GitHub terhubung ke branch `main`; setiap push menjalankan tes, build, backup SQLite sebelum penggantian container, deploy, dan pemeriksaan HTTPS. Harga produksi masih berupa draf yang belum diterbitkan kepada klien.
 
+**Keputusan tarif sementara (14 Oktober 2026):** pemilik produk menyetujui penggunaan dasar Rp6.000.000 per hari kerja dan harga minimum Rp20.000.000 untuk sementara. Angka ini tetap dapat diedit admin. Persetujuan ini belum mencakup kalibrasi dengan biaya/proyek nyata atau penerbitan versi aturan harga ke klien; keduanya tetap dicatat sebagai pekerjaan terpisah.
+
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
 - [x] Tetapkan daftar pertanyaan estimasi awal untuk Web Application, API, Mobile Application, dan Infrastruktur dari workbook sumber; pemetaan ada di `QUESTION_MAPPING.md`.
 - [x] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar. Kolom pendalaman khusus objek masih perlu dipilih sebelum rilis.
 - [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
+- [x] Catat persetujuan pemilik produk atas tarif dasar sementara Rp6 juta per hari kerja dan minimum Rp20 juta; angka dapat direvisi admin.
 - [x] Siapkan lembar kalibrasi privat untuk biaya harian, margin, deliverable, retest, pekerjaan yang tumpang tindih, dan tiga proyek pembanding; isian bisnis masih menunggu Cankonix.
 - [x] Siapkan rancangan keputusan masa berlaku estimasi, penyimpanan prospek, dan persetujuan penawaran di `POLICY_DRAFT.md`; penerapan menunggu keputusan Cankonix.
 - [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
