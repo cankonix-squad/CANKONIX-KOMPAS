@@ -17,10 +17,23 @@ test('aturan menghasilkan kisaran yang dapat ditelusuri', () => {
 })
 
 test('cakupan tidak pasti dan beberapa objek menahan angka publik', () => {
-  const result = calculate(validateScope({ ...scope, objects:[...scope.objects,{type:'api',count:1,size:'unknown'}] }), rules, 1)
+  const result = calculate(validateScope({ ...scope, objects:[...scope.objects,{type:'api',count:1,size:'unknown'}], sharedTarget:'unknown' }), rules, 1)
   assert.equal(result.status, 'review')
   assert.equal(result.low, null)
-  assert.ok(result.reasons.some(reason => reason.includes('tumpang tindih')))
+  assert.equal(result.days, null)
+  assert.ok(result.reasons.some(reason => reason.includes('dihitung dua kali')))
+})
+
+test('objek terpisah dihitung, target bersama ditinjau tanpa total hari semu', () => {
+  const objects = [{type:'web',count:1,size:10},{type:'api',count:1,size:10}]
+  const separate = calculate(validateScope({ ...scope, objects, sharedTarget:'no' }), rules, 1)
+  assert.equal(separate.status, 'estimate')
+  assert.equal(separate.days, 5.5)
+  const shared = calculate(validateScope({ ...scope, objects, sharedTarget:'yes' }), rules, 1)
+  assert.equal(shared.status, 'review')
+  assert.equal(shared.days, null)
+  assert.equal(shared.low, null)
+  assert.throws(() => validateScope({ ...scope, objects, sharedTarget:'invalid' }))
 })
 
 test('input tidak valid ditolak', () => {

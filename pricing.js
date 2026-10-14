@@ -23,7 +23,9 @@ export function validateScope(value) {
   const roles = value.roles === 'unknown' ? 'unknown' : Number(value.roles)
   if (roles !== 'unknown' && (!Number.isInteger(roles) || roles < 0 || roles > 1000)) throw new Error('Jumlah peran pengguna tidak valid.')
   const notes = String(value.notes || '').trim().slice(0, 2000)
-  return { objects, method: value.method, environment: value.environment, access: value.access, window: value.window, roles, notes }
+  const sharedTarget = objects.length > 1 ? (value.sharedTarget || 'unknown') : 'no'
+  if (!['yes', 'no', 'unknown'].includes(sharedTarget)) throw new Error('Hubungan antar target tidak valid.')
+  return { objects, method: value.method, environment: value.environment, access: value.access, window: value.window, roles, sharedTarget, notes }
 }
 
 export function validateRules(value) {
@@ -69,7 +71,7 @@ export function calculate(scope, rules, version = null) {
   if (scope.roles === 'unknown') needsReview.push('Jumlah peran pengguna perlu dikonfirmasi.')
   if (scope.objects.some(item => item.size === 'unknown')) needsReview.push('Ukuran cakupan perlu dikonfirmasi.')
   if (scope.window === 'discuss') needsReview.push('Jadwal pengujian perlu dikonfirmasi.')
-  if (scope.objects.length > 1) needsReview.push('Potensi pekerjaan yang tumpang tindih perlu ditinjau.')
+  if (scope.objects.length > 1 && scope.sharedTarget !== 'no') needsReview.push('Target atau backend yang digunakan bersama perlu diperiksa agar pekerjaan tidak dihitung dua kali.')
   if (!rules) return { status: 'review', reasons: needsReview, days: null, low: null, high: null, rulesVersion: version }
   let days = scope.objects.reduce((sum, item) => sum + item.count * rules.days[item.type] + (item.size === 'unknown' ? 0 : Math.max(0, Math.ceil(item.size / rules.sizeUnit) - 1) * rules.sizeDays), 0)
   days += rules.methodDays?.[scope.method] || 0
@@ -78,7 +80,7 @@ export function calculate(scope, rules, version = null) {
   if (scope.window === 'after') days += rules.afterHoursDays
   if (scope.access === 'onsite') days += rules.onsiteDays
   days = Math.round(days * 10) / 10
-  if (needsReview.length) return { status: 'review', reasons: needsReview, days, low: null, high: null, rulesVersion: version }
+  if (needsReview.length) return { status: 'review', reasons: needsReview, days: scope.objects.length > 1 && scope.sharedTarget !== 'no' ? null : days, low: null, high: null, rulesVersion: version }
   const base = Math.max(rules.minimum, days * rules.rate)
   const round = n => Math.round(n / 100000 + 1e-9) * 100000
   return { status: 'estimate', reasons: [], days, low: round(Math.max(rules.minimum, base * (1 - rules.uncertainty))), high: round(Math.max(rules.minimum, base * (1 + rules.uncertainty))), rulesVersion: version }

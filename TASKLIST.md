@@ -55,7 +55,7 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 
 - [x] Modelkan objek, jawaban, estimasi, permintaan proposal, status prospek, aturan harga, dan riwayat aktivitas.
 - [x] Implementasikan kalkulasi di sisi server memakai versi aturan yang tersimpan pada setiap estimasi, dengan draf awal yang tidak aktif bagi klien.
-- [ ] Cegah hitung ganda bila beberapa objek berbagi target/backend; tandai kasus yang butuh pemeriksaan manusia.
+- [x] Tanyakan apakah beberapa objek berbagi target/backend. Jika ya atau belum tahu, tahan angka dan estimasi hari untuk pemeriksaan manusia; jika terpisah, hitung tiap objek.
 - [x] Validasi angka dan pilihan di server; tangani jawaban kosong, “Belum tahu”, jumlah nol, dan input di luar batas.
 - [x] Pastikan pengiriman berulang tidak membuat permintaan proposal ganda.
 - [ ] Perkuat pembatasan permintaan dan pencegahan spam sebelum produksi; penanganan dasar sudah ada.
