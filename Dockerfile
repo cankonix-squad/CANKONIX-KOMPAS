@@ -2,6 +2,7 @@ FROM node:24-alpine
 WORKDIR /app
 COPY package.json server.js pricing.js ./
 COPY public ./public
+COPY scripts/ops-snapshot.mjs ./scripts/
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
 ENV NODE_ENV=production DATA_DIR=/data PORT=4173 COOKIE_SECURE=true

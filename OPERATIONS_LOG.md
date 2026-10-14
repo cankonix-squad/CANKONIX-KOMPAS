@@ -16,3 +16,5 @@
 - Pemeriksaan berikutnya setelah deploy: container `healthy`; log aplikasi hanya menampilkan pesan mulai; agregat 4 sesi mulai, 5 estimasi selesai, 2 permintaan proposal berstatus `Baru`, dan 1 aturan harga `published`. Selisih satu estimasi selesai berasal dari uji harga publik.
 
 Pemeriksaan berikutnya: bedakan data uji dari prospek nyata di dashboard, pantau permintaan baru dan kesalahan aplikasi, lalu catat tindak lanjut tanpa menyalin data pribadi ke dokumen ini.
+
+Untuk snapshot agregat berikutnya, jalankan `docker compose -f docker-compose.prod.yml exec -T kompas node scripts/ops-snapshot.mjs` dari folder aplikasi VPS. Skrip membaca SQLite tanpa mengubah data dan menandai bahwa angka masih mencakup data uji. Periksa `/api/health` dan log container secara terpisah.
