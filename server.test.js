@@ -68,6 +68,8 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     assert.equal(privateRequest.status, 200)
     assert.equal(privateRequest.data.contact.position, 'Manajer TI')
     assert.equal(privateRequest.data.contact.phone, '+62 812 3456 7890')
+    assert.equal(privateRequest.data.contact.consentVersion, 'v1-2026-10-14')
+    assert.ok(privateRequest.data.contact.consentAt)
     assert.equal((await call('/api/tickets/resolve', 'POST', { code:request.data.id })).data.id, request.data.id)
     assert.equal((await call(privateUrl, 'PATCH', { targets:'contoh.test' })).status, 200)
 

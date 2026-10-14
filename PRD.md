@@ -129,6 +129,7 @@ Kriteria penerimaan visual: saat halaman KOMPAS dan Comply dibuka berdampingan, 
 
 - Data prospek dan cakupan hanya dapat dilihat oleh pengguna internal sesuai hak akses.
 - Catat persetujuan kontak, waktu pengiriman, dan versi pernyataan privasi yang disetujui.
+- Versi awal persetujuan kontak `v1-2026-10-14` menggunakan kalimat “Saya setuju dihubungi oleh Cankonix terkait permintaan proposal ini.” Keputusan masa simpan dan prosedur penghapusan dirinci sebagai usulan di `POLICY_DRAFT.md` sampai disetujui.
 - Tautan privat memakai token acak, masa berlaku, dan mekanisme pencabutan; jangan menaruh jawaban sensitif di URL.
 - Lindungi data saat dikirim dan disimpan. Catat aktivitas penting admin, termasuk perubahan status, harga, dan aturan kalkulasi.
 - Tetapkan kebijakan penyimpanan serta penghapusan data prospek sebelum peluncuran.

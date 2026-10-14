@@ -23,6 +23,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar. Kolom pendalaman khusus objek masih perlu dipilih sebelum rilis.
 - [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
 - [x] Siapkan lembar kalibrasi privat untuk biaya harian, margin, deliverable, retest, pekerjaan yang tumpang tindih, dan tiga proyek pembanding; isian bisnis masih menunggu Cankonix.
+- [x] Siapkan rancangan keputusan masa berlaku estimasi, penyimpanan prospek, dan persetujuan penawaran di `POLICY_DRAFT.md`; penerapan menunggu keputusan Cankonix.
 - [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
 - [ ] Kalibrasi aturan dengan contoh proyek Cankonix; catat siapa yang menyetujui versi pertama.
 - [x] Tentukan kondisi yang menampilkan kisaran rupiah dan kondisi yang wajib ditinjau manual; angka hanya tampil dari versi aturan yang sudah diterbitkan.
@@ -66,6 +67,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Tanyakan apakah beberapa objek berbagi target/backend. Jika ya atau belum tahu, tahan angka dan estimasi hari untuk pemeriksaan manusia; jika terpisah, hitung tiap objek.
 - [x] Validasi angka dan pilihan di server; tangani jawaban kosong, “Belum tahu”, jumlah nol, dan input di luar batas.
 - [x] Pastikan pengiriman berulang tidak membuat permintaan proposal ganda.
+- [x] Simpan waktu dan versi kalimat persetujuan kontak untuk permintaan baru agar riwayat persetujuan dapat ditelusuri.
 - [x] Perkuat pembatasan permintaan per pengunjung di belakang Traefik, batas khusus login dan proposal, pembersihan penghitung, serta kolom perangkap bot tanpa langkah tambahan bagi klien.
 
 **Selesai bila:** contoh perhitungan yang disetujui menghasilkan hasil yang benar dan estimasi lama tidak berubah ketika aturan baru diterbitkan.

@@ -9,6 +9,7 @@ import { calculate, validateRules, validateScope } from './pricing.js'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
 const dataDir = path.resolve(process.env.DATA_DIR || path.join(root, 'data'))
+const CONTACT_CONSENT_VERSION = 'v1-2026-10-14'
 fs.mkdirSync(dataDir, { recursive: true })
 const db = new DatabaseSync(path.join(dataDir, 'kompas.sqlite'))
 db.exec(`PRAGMA journal_mode=WAL;
@@ -152,7 +153,7 @@ const route = async (req, res) => {
       const token = id
       const created = now()
       const expires = new Date(Date.now() + 30 * 86400000).toISOString()
-      db.prepare('INSERT INTO requests(id,token_hash,token_expires_at,access_code_hash,access_code_expires_at,idempotency_key,contact,scope,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(id, hash(token), expires, hash(id), expires, key, JSON.stringify({ ...contact, consentAt: created }), JSON.stringify(scope), JSON.stringify(result), created, created)
+      db.prepare('INSERT INTO requests(id,token_hash,token_expires_at,access_code_hash,access_code_expires_at,idempotency_key,contact,scope,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(id, hash(token), expires, hash(id), expires, key, JSON.stringify({ ...contact, consentAt: created, consentVersion: CONTACT_CONSENT_VERSION }), JSON.stringify(scope), JSON.stringify(result), created, created)
       db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run(id, 'created', 'Permintaan proposal masuk', created)
       db.prepare('INSERT INTO events(kind,created_at) VALUES(?,?)').run('proposal', created)
       return json(res, 201, { id, token })
