@@ -40,4 +40,5 @@ pre{background:rgba(0,0,0,.28);color:#f5f5f5}
 footer{color:#c0c0c0}
 a{color:#a8c8ff}
 :focus-visible{outline:2px solid #a8c8ff;outline-offset:3px}
+[hidden]{display:none!important}
 @media(max-width:700px){.site-header{height:68px}.brand{font-size:16px}.brand img{height:34px;max-width:140px}}
