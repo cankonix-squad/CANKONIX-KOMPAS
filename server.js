@@ -111,11 +111,11 @@ const route = async (req, res) => {
       const key = String(body.idempotencyKey || '')
       if (!/^[a-zA-Z0-9_-]{16,100}$/.test(key)) throw new Error('Kunci permintaan tidak valid.')
       const existing = db.prepare('SELECT id FROM requests WHERE idempotency_key=?').get(key)
-      if (existing) return json(res, 200, { id: existing.id, duplicate: true })
+      if (existing) return json(res, 200, { id: existing.id, ...( /^KMP-\d{4}-[A-F0-9]{32}$/.test(existing.id) ? { token: existing.id } : {}), duplicate: true })
       const { version, rules } = currentRules()
       const result = calculate(scope, rules, version)
-      const id = `KMP-${new Date().getFullYear()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`
-      const token = random()
+      const id = `KMP-${new Date().getFullYear()}-${crypto.randomBytes(16).toString('hex').toUpperCase()}`
+      const token = id
       const created = now()
       const expires = new Date(Date.now() + 30 * 86400000).toISOString()
       db.prepare('INSERT INTO requests(id,token_hash,token_expires_at,idempotency_key,contact,scope,result,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)').run(id, hash(token), expires, key, JSON.stringify({ ...contact, consentAt: created }), JSON.stringify(scope), JSON.stringify(result), created, created)

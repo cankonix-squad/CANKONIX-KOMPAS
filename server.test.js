@@ -52,10 +52,12 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     const requestBody = { scope:scope(), contact, consent:true, idempotencyKey:'request-1234567890' }
     const request = await call('/api/requests', 'POST', requestBody)
     assert.equal(request.status, 201)
-    assert.equal(request.data.id.startsWith('KMP-'), true)
+    assert.match(request.data.id, /^KMP-\d{4}-[A-F0-9]{32}$/)
+    assert.equal(request.data.token, request.data.id)
     const duplicate = await call('/api/requests', 'POST', requestBody)
     assert.equal(duplicate.status, 200)
     assert.equal(duplicate.data.id, request.data.id)
+    assert.equal(duplicate.data.token, request.data.id)
     assert.equal(duplicate.data.duplicate, true)
     assert.equal((await call(`/api/requests/${request.data.id}?token=wrong`)).status, 404)
     const privateUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(request.data.token)}`
