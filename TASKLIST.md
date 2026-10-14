@@ -1,7 +1,7 @@
 # Tasklist KOMPAS
 
 **Acuan produk:** [PRD.md](PRD.md)  
-**Status:** Implementasi lokal berlangsung; belum push atau deploy  
+**Status:** Fondasi MVP lokal sudah di-push; belum deploy  
 **Tanggal:** 14 Oktober 2026
 
 ## Lokasi dan target rilis
@@ -15,7 +15,7 @@
 | Folder aplikasi pada VPS | `~/cankonix-node/apps/cankonix-kompas/` pada sesi `root@cankonix` |
 | Acuan aset dan tampilan | `/Users/cankonix/Documents/Cankonix Labs/COMPLY` |
 
-Alamat dan lokasi VPS di atas adalah informasi target dari pemilik proyek; DNS, akses server, reverse proxy, sertifikat TLS, dan isi folder VPS **belum diverifikasi**. Folder lokal KOMPAS belum menjadi repo Git pada pemeriksaan awal. Pemeriksaan `git ls-remote ... HEAD` belum mengembalikan commit; periksa lagi sebelum inisialisasi atau push agar tidak menimpa pekerjaan yang mungkin sudah ada.
+DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14 Oktober 2026. Folder aplikasi VPS ada dan masih kosong saat diperiksa. Host VPS tidak memiliki perintah `node`; Docker tersedia. Traefik memakai jaringan `cankonix-proxy`, dan contoh layanan Comply memakai entrypoint `websecure` dengan resolver `letsencrypt`. Sertifikat untuk domain KOMPAS, backup volume, serta konfigurasi produksi KOMPAS sendiri belum diverifikasi. Repo GitHub awalnya belum memiliki commit; fondasi MVP kini ada pada branch `main`.
 
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
@@ -94,10 +94,11 @@ Alamat dan lokasi VPS di atas adalah informasi target dari pemilik proyek; DNS, 
 
 ## 8. Siapkan repo dan rilis produksi
 
-- [ ] Tinjau perubahan, buat commit, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
-- [ ] Push kode yang sudah lolos pengujian lokal; catat commit yang menjadi kandidat rilis.
-- [ ] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
-- [ ] Periksa isi `~/cankonix-node/apps/cankonix-kompas/`, runtime, database, reverse proxy, sertifikat TLS, dan prosedur backup pada VPS.
+- [x] Tinjau perubahan, buat commit lokal, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
+- [x] Push fondasi MVP yang lulus tes awal ke branch `main`; commit pertama `4950330` bukan kandidat rilis final.
+- [x] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
+- [ ] Periksa sertifikat TLS domain KOMPAS, backup volume SQLite, dan konfigurasi akhir VPS; Docker dan jaringan Traefik sudah diketahui, folder target masih kosong.
+- [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
 - [ ] Siapkan konfigurasi produksi di luar repo, migrasi database, prosedur deploy, health check, dan langkah rollback.
 - [ ] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal, login admin, dashboard, dan HTTPS.
 - [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.

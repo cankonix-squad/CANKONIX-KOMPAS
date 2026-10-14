@@ -1,0 +1,8 @@
+.git
+.env
+data
+*.xlsx
+*.test.js
+PRD.md
+TASKLIST.md
+README.md

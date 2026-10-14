@@ -196,3 +196,4 @@ const route = async (req, res) => {
 const server = http.createServer((req, res) => { route(req, res).catch(err => error(res, err.message === 'Data terlalu besar.' ? 413 : 400, err.message || 'Terjadi kesalahan.')) })
 const port = Number(process.env.PORT || 4173)
 server.listen(port, () => console.log(`KOMPAS berjalan di http://localhost:${port}`))
+for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => server.close(() => { db.close(); process.exit(0) }))

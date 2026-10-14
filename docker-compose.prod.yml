@@ -1,0 +1,29 @@
+services:
+  kompas:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      PORT: 4173
+      DATA_DIR: /data
+      COOKIE_SECURE: "true"
+    volumes:
+      - kompas_data:/data
+    networks:
+      - cankonix-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=cankonix-proxy
+      - traefik.http.routers.kompas.rule=Host(`kompas.cankonix.com`)
+      - traefik.http.routers.kompas.entrypoints=websecure
+      - traefik.http.routers.kompas.tls=true
+      - traefik.http.routers.kompas.tls.certresolver=letsencrypt
+      - traefik.http.services.kompas.loadbalancer.server.port=4173
+
+volumes:
+  kompas_data:
+
+networks:
+  cankonix-proxy:
+    external: true
