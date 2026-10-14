@@ -15,7 +15,7 @@
 | Folder aplikasi pada VPS | `~/cankonix-node/apps/cankonix-kompas/` pada sesi `root@cankonix` |
 | Acuan aset dan tampilan | `/Users/cankonix/Documents/Cankonix Labs/COMPLY` |
 
-DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14 Oktober 2026. Folder aplikasi VPS ada dan masih kosong saat diperiksa. Host VPS tidak memiliki perintah `node`; Docker tersedia. Traefik memakai jaringan `cankonix-proxy`, dan contoh layanan Comply memakai entrypoint `websecure` dengan resolver `letsencrypt`. Sertifikat untuk domain KOMPAS, backup volume, serta konfigurasi produksi KOMPAS sendiri belum diverifikasi. Repo GitHub awalnya belum memiliki commit; fondasi MVP kini ada pada branch `main`.
+DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14 Oktober 2026. Folder aplikasi VPS ada dan masih kosong saat diperiksa. Host VPS tidak memiliki perintah `node`; Docker tersedia. Traefik memakai jaringan `cankonix-proxy`, dan contoh layanan Comply memakai entrypoint `websecure` dengan resolver `letsencrypt`. Permintaan HTTPS ke domain KOMPAS saat ini gagal verifikasi sertifikat; router dan sertifikat domain perlu diperiksa saat rilis. Backup volume serta konfigurasi produksi KOMPAS sendiri belum diverifikasi. Repo GitHub awalnya belum memiliki commit; fondasi MVP kini ada pada branch `main`.
 
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
