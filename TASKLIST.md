@@ -1,7 +1,7 @@
 # Tasklist KOMPAS
 
 **Acuan produk:** [PRD.md](PRD.md)  
-**Status:** MVP sudah live melalui CI/CD; tarif dasar sementara disetujui, penerbitan harga klien dan penyempurnaan produk masih berjalan
+**Status:** MVP dan kisaran harga sementara sudah live; penyempurnaan produk dan kalibrasi harga lanjutan masih berjalan
 **Tanggal:** 14 Oktober 2026
 
 ## Lokasi dan target rilis
@@ -15,9 +15,9 @@
 | Folder aplikasi pada VPS | `~/cankonix-node/apps/cankonix-kompas/` pada sesi `root@cankonix` |
 | Acuan aset dan tampilan | `/Users/cankonix/Documents/Cankonix Labs/COMPLY` |
 
-DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS melalui Docker Compose dan Traefik pada jaringan `cankonix-proxy`. Sertifikat HTTPS valid dan `/api/health` merespons 200 pada 14 Oktober 2026. Repo GitHub terhubung ke branch `main`; setiap push menjalankan tes, build, backup SQLite sebelum penggantian container, deploy, dan pemeriksaan HTTPS. Harga produksi masih berupa draf yang belum diterbitkan kepada klien.
+DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS melalui Docker Compose dan Traefik pada jaringan `cankonix-proxy`. Sertifikat HTTPS valid dan `/api/health` merespons 200 pada 14 Oktober 2026. Repo GitHub terhubung ke branch `main`; setiap push menjalankan tes, build, backup SQLite sebelum penggantian container, deploy, dan pemeriksaan HTTPS. Aturan harga sementara versi 1 sudah diterbitkan kepada klien pada 14 Oktober 2026.
 
-**Keputusan tarif sementara (14 Oktober 2026):** pemilik produk menyetujui penggunaan dasar Rp6.000.000 per hari kerja dan harga minimum Rp20.000.000 untuk sementara. Angka ini tetap dapat diedit admin. Persetujuan ini belum mencakup kalibrasi dengan biaya/proyek nyata atau penerbitan versi aturan harga ke klien; keduanya tetap dicatat sebagai pekerjaan terpisah.
+**Keputusan tarif sementara (14 Oktober 2026):** pemilik produk menyetujui penggunaan dasar Rp6.000.000 per hari kerja dan harga minimum Rp20.000.000 untuk sementara, lalu meminta sistem dilanjutkan sampai harga live. Aturan versi 1 telah diterbitkan melalui alur admin setelah pratinjau 12 kombinasi dasar diperiksa. Angka tetap dapat direvisi melalui draf versi berikutnya; kalibrasi dengan biaya/proyek nyata masih terbuka.
 
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
@@ -25,6 +25,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar. Kolom pendalaman khusus objek masih perlu dipilih sebelum rilis.
 - [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
 - [x] Catat persetujuan pemilik produk atas tarif dasar sementara Rp6 juta per hari kerja dan minimum Rp20 juta; angka dapat direvisi admin.
+- [x] Terbitkan aturan harga sementara versi 1 melalui alur admin setelah memeriksa 12 contoh harga dasar dan uji estimasi publik di domain produksi.
 - [x] Siapkan lembar kalibrasi privat untuk biaya harian, margin, deliverable, retest, pekerjaan yang tumpang tindih, dan tiga proyek pembanding; isian bisnis masih menunggu Cankonix.
 - [x] Siapkan rancangan keputusan masa berlaku estimasi, penyimpanan prospek, dan persetujuan penawaran di `POLICY_DRAFT.md`; penerapan menunggu keputusan Cankonix.
 - [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
@@ -137,4 +138,4 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Ulangi pemeriksaan kesehatan, log, dan angka agregat produksi pada 14 Oktober 2026; hasil dicatat di `OPERATIONS_LOG.md` tanpa data pribadi.
 - [ ] Lanjutkan pemantauan log dan metrik berkala saat klien mulai menggunakan sistem; catat masalah dan tindak lanjutnya.
 
-**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Audit aksesibilitas khusus dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
+**Status rilis:** sistem dan kisaran harga otomatis sementara sudah live. Kondisi yang belum jelas tetap menampilkan “Perlu ditinjau”, dan penawaran final baru terlihat pada tiket setelah diterbitkan Admin/Sales. Audit aksesibilitas khusus dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
