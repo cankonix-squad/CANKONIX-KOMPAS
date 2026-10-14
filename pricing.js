@@ -14,7 +14,9 @@ export function validateScope(value) {
     if (!Number.isInteger(count) || count < 1 || count > 10000) throw new Error('Jumlah objek harus antara 1 dan 10.000.')
     const size = item.size === 'unknown' ? 'unknown' : Number(item.size)
     if (size !== 'unknown' && (!Number.isInteger(size) || size < 1 || size > 100000)) throw new Error('Ukuran cakupan tidak valid.')
-    return { type: item.type, count, size }
+    const platform = item.type === 'mobile' ? (item.platform || 'unknown') : null
+    if (item.type === 'mobile' && !['android', 'ios', 'both', 'unknown'].includes(platform)) throw new Error('Platform aplikasi mobile tidak valid.')
+    return { type: item.type, count, size, ...(platform ? { platform } : {}) }
   })
   if (!METHODS.includes(value.method)) throw new Error('Pilih metode pengujian.')
   if (!ENVIRONMENTS.includes(value.environment)) throw new Error('Pilih lingkungan pengujian.')
@@ -70,6 +72,7 @@ export function calculate(scope, rules, version = null) {
   if (scope.access === 'onsite') needsReview.push('Kebutuhan onsite perlu dikonfirmasi.')
   if (scope.roles === 'unknown') needsReview.push('Jumlah peran pengguna perlu dikonfirmasi.')
   if (scope.objects.some(item => item.size === 'unknown')) needsReview.push('Ukuran cakupan perlu dikonfirmasi.')
+  if (scope.objects.some(item => item.type === 'mobile' && (item.platform === 'both' || item.platform === 'unknown'))) needsReview.push('Platform Android dan iOS perlu diperiksa agar cakupan pengujian tepat.')
   if (scope.window === 'discuss') needsReview.push('Jadwal pengujian perlu dikonfirmasi.')
   if (scope.objects.length > 1 && scope.sharedTarget !== 'no') needsReview.push('Target atau backend yang digunakan bersama perlu diperiksa agar pekerjaan tidak dihitung dua kali.')
   if (!rules) return { status: 'review', reasons: needsReview, days: null, low: null, high: null, rulesVersion: version }

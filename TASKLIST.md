@@ -19,8 +19,8 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 
 ## 1. Tetapkan keputusan produk sebelum kalkulator harga
 
-- [ ] Finalkan daftar pertanyaan estimasi awal untuk Web Application, API, Mobile Application, dan Infrastruktur dari workbook sumber.
-- [ ] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar.
+- [x] Tetapkan daftar pertanyaan estimasi awal untuk Web Application, API, Mobile Application, dan Infrastruktur dari workbook sumber; pemetaan ada di `QUESTION_MAPPING.md`.
+- [x] Pisahkan pertanyaan estimasi singkat dari pertanyaan pendalaman proposal; sediakan “Belum tahu” bila wajar. Kolom pendalaman khusus objek masih perlu dipilih sebelum rilis.
 - [x] Siapkan draf tarif internal berdasarkan referensi pasar; dokumen rincian `PRICING_BENCHMARK.md` tetap lokal dan diabaikan Git. Sumber pembanding publik ada di `MARKET_REFERENCES.md`.
 - [ ] Kalibrasi draf dengan biaya internal Cankonix, deliverable, retest, margin, dan pekerjaan yang tumpang tindih sebelum menerbitkan.
 - [ ] Kalibrasi aturan dengan contoh proyek Cankonix; catat siapa yang menyetujui versi pertama.
@@ -80,8 +80,8 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 
 ## 6. Terapkan tampilan dan bahasa
 
-- [x] Gunakan logo Cankonix dari COMPLY, warna utama dan pola kartu/navigasi yang serasi dengan `comply.cankonix.com`.
-- [x] Terapkan **Helvetica 12 px** untuk teks biasa dan **14 px** untuk heading; gunakan `Arial, sans-serif` sebagai fallback.
+- [x] Gunakan logo Cankonix dari COMPLY, latar lingkaran gelap dan kartu abu-abu seperti halaman login Comply, serta header KOMPAS yang lebih besar.
+- [x] Terapkan **Helvetica 14 px** untuk teks biasa dan **16 px** untuk heading; gunakan `Arial, sans-serif` sebagai fallback.
 - [x] Tulis teks antarmuka dalam bahasa Indonesia yang mudah dipahami, sambil mempertahankan istilah assessment yang baku.
 - [ ] Periksa tampilan desktop dan ponsel, kontras warna, fokus keyboard, label input, serta pesan kesalahan.
 

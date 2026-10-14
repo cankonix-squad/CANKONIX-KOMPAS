@@ -251,7 +251,7 @@ const route = async (req, res) => {
         ['Mobile Gray Box', 'mobile', 'gray'], ['Infrastruktur Black Box', 'infra', 'black']
       ]
       const samples = scenarios.map(([name, type, method]) => {
-        const scope = validateScope({ objects: [{ type, count: 1, size: 10 }], method, roles: 1, environment: 'staging', access: 'internet', window: 'business' })
+        const scope = validateScope({ objects: [{ type, count: 1, size: 10, ...(type === 'mobile' ? { platform: 'android' } : {}) }], method, roles: 1, environment: 'staging', access: 'internet', window: 'business' })
         return { name, result: calculate(scope, rules) }
       })
       return json(res, 200, { samples })

@@ -58,6 +58,7 @@ Formulir awal tidak mensyaratkan akun. Simpan progres lokal pada perangkat agar 
 | --- | --- | --- |
 | Objek | Apa yang ingin diuji? | Pilihan banyak objek. |
 | Jumlah | Berapa aplikasi, API, aplikasi mobile, atau host yang akan diuji? | Angka per objek; hindari perhitungan ganda. |
+| Platform mobile | Android, iOS, atau keduanya? | Pilihan hanya saat Mobile Application dipilih; “Belum tahu” tersedia. |
 | Cakupan | Seberapa besar cakupannya? | Kisaran sederhana seperti fitur utama, jumlah endpoint, atau jumlah host. Sediakan pilihan “Belum tahu”. |
 | Akses | Jenis pengujian yang diinginkan? | Black Box, Gray Box, White Box, atau “Bantu tentukan”, masing-masing dengan penjelasan singkat. |
 | Peran | Berapa jenis akun/peran pengguna yang perlu diuji? | Angka/kisaran; muncul bila relevan. |
@@ -115,11 +116,11 @@ Workbook sumber tidak menyediakan data harga atau realisasi usaha proyek. Sumber
 Tampilan KOMPAS harus terasa sebagai bagian dari keluarga produk **Cankonix Comply**. Gunakan aset dan pola antarmuka dari folder `../COMPLY` sebagai sumber utama saat desain dan implementasi. Jangan menggambar ulang logo atau membuat palet baru bila aset dan token yang sesuai sudah tersedia.
 
 - **Logo:** gunakan `../COMPLY/frontend/public/assets/cankonix/logo-white.png` pada latar gelap dan `../COMPLY/frontend/public/assets/cankonix/logo-black.png` pada latar terang. Aset sumber beresolusi lebih tinggi tersedia di `../COMPLY/assets/cankonix logo/`.
-- **Font dan token dasar:** rujuk warna dan token pada `../COMPLY/frontend/src/index.css`, tetapi gunakan **Helvetica** untuk KOMPAS. Teks biasa berukuran **12 px** dan semua heading **14 px**; hierarki heading dibedakan lewat ketebalan, warna, dan jarak, bukan ukuran font. Gunakan fallback `Arial, sans-serif` bila Helvetica tidak tersedia. Warna dasar gelap `#111111`, teks terang `#f5f5f5`, dan aksen biru `#1769e0` / `#2f80ff`.
-- **Halaman assessment publik:** rujuk `../COMPLY/frontend/src/pages/public/GuestIso27001Assessment.css` untuk pola header gelap, latar halaman terang, kartu putih, radius sudut, jarak antarelemen, tombol biru, dan tampilan ponsel. KOMPAS mengikuti pola visualnya, tetapi jumlah langkah dan pertanyaan disesuaikan dengan kebutuhan estimasi pentest.
+- **Font dan token dasar:** rujuk warna dan token pada `../COMPLY/frontend/src/index.css`, tetapi gunakan **Helvetica** untuk KOMPAS. Teks biasa berukuran **14 px** dan semua heading **16 px**; hierarki heading dibedakan lewat ketebalan, warna, dan jarak, bukan ukuran font. Gunakan fallback `Arial, sans-serif` bila Helvetica tidak tersedia. Warna dasar gelap `#111111`, teks terang `#f5f5f5`, dan aksen biru `#1769e0` / `#2f80ff`.
+- **Halaman assessment publik:** gunakan pola latar lingkaran gelap dan kartu kaca abu-abu pada `../COMPLY/frontend/src/pages/auth/AuthPages.css`, sesuai contoh visual yang dipilih. Header KOMPAS dibuat lebih tinggi dengan logo dan nama produk lebih besar. Pertanyaan, tombol, tabel, dan halaman admin memakai warna teks terang yang tetap terbaca.
 - **Dashboard admin:** gunakan struktur navigasi dan komponen yang serasi dengan dashboard Comply; kepadatan informasi boleh berbeda sesuai kebutuhan pemantauan prospek.
 
-Kriteria penerimaan visual: saat halaman KOMPAS dan Comply dibuka berdampingan, logo, warna utama, tombol, kartu, dan navigasi terlihat konsisten; tipografi KOMPAS mengikuti ketentuan Helvetica 12 px/14 px di atas. Formulir tetap nyaman pada layar ponsel. Pemeriksaan ini dilakukan saat implementasi, bukan hanya berdasarkan dokumen.
+Kriteria penerimaan visual: saat halaman KOMPAS dan Comply dibuka berdampingan, logo, warna utama, tombol, kartu, dan navigasi terlihat konsisten; tipografi KOMPAS mengikuti ketentuan Helvetica 14 px/16 px di atas. Formulir tetap nyaman pada layar ponsel. Pemeriksaan ini dilakukan saat implementasi, bukan hanya berdasarkan dokumen.
 
 ## 8. Data, keamanan, dan privasi
 

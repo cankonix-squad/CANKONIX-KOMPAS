@@ -53,3 +53,12 @@ test('metode pengujian mengubah estimasi hari dan harga', () => {
   assert.equal(white.days, 6.5)
   assert.ok(black.low < gray.low && gray.low < white.low)
 })
+
+test('dua platform mobile perlu ditinjau sebelum harga ditampilkan', () => {
+  const mobile = { ...scope, objects:[{type:'mobile',count:1,size:10,platform:'both'}] }
+  const result = calculate(validateScope(mobile), rules, 1)
+  assert.equal(result.status, 'review')
+  assert.equal(result.low, null)
+  const android = calculate(validateScope({ ...mobile, objects:[{type:'mobile',count:1,size:10,platform:'android'}] }), rules, 1)
+  assert.equal(android.status, 'estimate')
+})
