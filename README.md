@@ -1,0 +1,20 @@
+# KOMPAS
+
+Aplikasi estimasi cakupan pentest Cankonix. Lihat [PRD.md](PRD.md) dan [TASKLIST.md](TASKLIST.md).
+
+## Jalankan lokal
+
+Memerlukan Node.js 24 atau lebih baru. Tidak ada langkah `npm install` karena aplikasi memakai modul bawaan Node.js.
+
+1. Salin `.env.example` menjadi `.env`, lalu isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` dengan nilai lokal yang kuat. Akun `SALES_*`, `REVIEWER_*`, dan `PRICING_*` bersifat opsional; setiap password harus minimal 16 karakter.
+2. Jalankan `node --env-file=.env server.js`.
+3. Buka `http://localhost:4173/` untuk formulir dan `http://localhost:4173/admin` untuk dashboard.
+4. Jalankan `npm test` untuk menguji kalkulasi dan validasi.
+
+Data tersimpan dalam `data/kompas.sqlite`, yang diabaikan Git. Tanpa aturan harga aktif, hasil selalu **Perlu ditinjau**. Admin dapat mengaktifkan aturan harga setelah tarif internal disetujui. Jangan gunakan `.env.example` sebagai kredensial produksi.
+
+Sebelum dipasang di domain HTTPS, set `COOKIE_SECURE=true`. Peran `sales` dan `reviewer` dapat meninjau serta memperbarui permintaan; peran `pricing` dapat mengubah aturan harga. Peran `admin` dapat keduanya.
+
+## Catatan rilis
+
+Target repo: `https://github.com/cankonix-squad/CANKONIX-KOMPAS`. Target domain: `https://kompas.cankonix.com/`. Detail server dan gerbang rilis ada di [TASKLIST.md](TASKLIST.md). Aplikasi belum dideploy.
