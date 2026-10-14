@@ -136,6 +136,7 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
 - [x] Siapkan konfigurasi produksi di luar repo, migrasi database otomatis, prosedur deploy, health check, dan langkah rollback dalam `DEPLOYMENT.md`.
 - [x] Jalankan dan verifikasi workflow CI/CD GitHub Actions: tes, build Docker, backup SQLite, deploy VPS, dan pemeriksaan HTTPS. Dua run berhasil pada 14 Oktober 2026.
+- [x] Perbarui checkout dan setup-node GitHub Actions ke runtime Node 24; nonaktifkan cache package manager otomatis yang tidak diperlukan proyek ini.
 - [x] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal sintetis, akses tiket privat, login admin, dashboard, dan HTTPS.
 - [x] Verifikasi artefak backup SQLite sesudah deploy kedua; file ditemukan di VPS dan `PRAGMA integrity_check` menghasilkan `ok`.
 - [x] Periksa kondisi awal setelah rilis pada 14 Oktober 2026: container sehat, log aplikasi tanpa kesalahan, pipeline terakhir berhasil. Dashboard berisi satu permintaan sintetis bertanda “UJI SISTEM”, belum ada permintaan klien nyata.

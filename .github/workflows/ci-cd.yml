@@ -13,10 +13,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Test application
         run: npm test
       - name: Build production image
@@ -30,7 +31,7 @@ jobs:
       group: kompas-production
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Configure pinned SSH host and deploy key
         env:
           DEPLOY_KEY: ${{ secrets.KOMPAS_DEPLOY_KEY }}
