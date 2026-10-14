@@ -91,6 +91,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Tulis teks antarmuka dalam bahasa Indonesia yang mudah dipahami, sambil mempertahankan istilah assessment yang baku.
 - [x] Periksa tampilan visual desktop dan ponsel; pemilik produk menyatakan keduanya aman pada 14 Oktober 2026.
 - [x] Perbaiki navigasi keyboard tabel permintaan admin: tiap referensi memakai tombol yang dapat difokuskan; tabel akun memiliki header dan label peran yang jelas.
+- [x] Pindahkan fokus ke judul saat admin membuka detail permintaan atau kembali ke dashboard; umumkan pesan kesalahan login dan perubahan permintaan kepada pembaca layar.
 - [ ] Periksa kontras warna, fokus keyboard, label input, dan pesan kesalahan secara khusus untuk aksesibilitas. Fokus judul saat berpindah langkah dan penanda langkah aktif sudah ditambahkan; verifikasi langsung tetap diperlukan.
 
 **Selesai bila:** halaman KOMPAS terlihat satu keluarga dengan Comply dan seluruh alur klien nyaman dipakai di ponsel.
@@ -120,6 +121,7 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Jalankan smoke test pada domain produksi: halaman publik, estimasi, permintaan proposal sintetis, akses tiket privat, login admin, dashboard, dan HTTPS.
 - [x] Verifikasi artefak backup SQLite sesudah deploy kedua; file ditemukan di VPS dan `PRAGMA integrity_check` menghasilkan `ok`.
 - [x] Periksa kondisi awal setelah rilis pada 14 Oktober 2026: container sehat, log aplikasi tanpa kesalahan, pipeline terakhir berhasil. Dashboard berisi satu permintaan sintetis bertanda “UJI SISTEM”, belum ada permintaan klien nyata.
+- [x] Ulangi pemeriksaan kesehatan, log, dan angka agregat produksi pada 14 Oktober 2026; hasil dicatat di `OPERATIONS_LOG.md` tanpa data pribadi.
 - [ ] Lanjutkan pemantauan log dan metrik berkala saat klien mulai menggunakan sistem; catat masalah dan tindak lanjutnya.
 
 **Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Audit aksesibilitas khusus dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.

@@ -1,6 +1,7 @@
 const root = document.querySelector('#admin')
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
 const money = value => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value)
+const focusView = () => { const heading = root.querySelector('h2'); if (heading) { heading.tabIndex = -1; heading.focus() } }
 
 async function api(path, options = {}) {
   const response = await fetch(path, { credentials: 'same-origin', headers: { 'content-type': 'application/json' }, ...options })
@@ -114,6 +115,7 @@ function dashboard() {
     } catch (err) { document.querySelector('#password-error').textContent = err.message }
   }
   if (ruleData) renderRules()
+  focusView()
 }
 
 function renderUsers() {
@@ -177,7 +179,7 @@ async function detail(id) {
       <div class="fields"><label class="field">Status<select id="status">${['Baru', 'Perlu ditinjau', 'Dihubungi', 'Proposal dikirim', 'Menang', 'Tidak lanjut'].map(status => `<option ${status === item.status ? 'selected' : ''}>${status}</option>`).join('')}</select></label>
       <label class="field">Penanggung jawab<input id="owner" maxlength="120" value="${escape(item.owner)}"></label></div>
       <label class="field">Catatan internal<textarea id="notes" maxlength="4000">${escape(item.notes)}</textarea></label>
-      <button class="button" id="save">Simpan perubahan</button><p class="error" id="error"></p>` : ''}
+      <button class="button" id="save">Simpan perubahan</button><p class="error" id="error" role="alert"></p>` : ''}
       ${['admin','sales'].includes(user.role) ? `<h2>Penawaran untuk klien</h2>
       ${item.offer.publishedAt ? `<p class="notice">Penawaran sudah dikirim pada ${escape(item.offer.publishedAt)} dan dapat dilihat lewat tautan privat klien.</p>` : '<p class="notice warn">Draf penawaran hanya terlihat oleh admin. Periksa harga dan cakupan sebelum mengirim.</p>'}
       <label class="field">Harga penawaran final (Rp)<input id="offer-price" type="number" min="1" max="1000000000000" value="${escape(item.offer.price ?? '')}" ${item.offer.publishedAt?'disabled':''}></label>
@@ -188,6 +190,7 @@ async function detail(id) {
       <h2>Riwayat</h2><ul class="summary-list">${item.activity.map(entry => `<li>${new Date(entry.created_at).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('')}</ul>
     </section>`
     document.querySelector('#back').onclick = load
+    focusView()
     if (['admin','sales'].includes(user.role)) document.querySelector('#issue-code').onclick = async () => {
       try {
         if (!confirm('Buat kode akses baru untuk klien? Kode akses sebelumnya tidak dapat dipakai lagi.')) return
