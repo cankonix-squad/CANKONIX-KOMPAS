@@ -13,5 +13,6 @@
 - Draf produksi versi 1 cocok dengan angka tersebut. Pratinjau 12 kombinasi objek/metode dasar menghasilkan kisaran valid di atas batas minimum; aturan diterbitkan melalui endpoint admin dan tercatat sebagai versi 1.
 - Pemeriksaan publik sesudah penerbitan: `/api/health` merespons `ok`; Web Application Black Box, 1 objek/10 fitur, staging, 1 peran menghasilkan 4 hari kerja dan kisaran Rp20,4–27,6 juta dengan `rulesVersion: 1`.
 - Pemeriksaan estimasi publik ini adalah data uji dan menambah satu peristiwa `complete` pada metrik; jangan tafsirkan sebagai aktivitas klien nyata.
+- Pemeriksaan berikutnya setelah deploy: container `healthy`; log aplikasi hanya menampilkan pesan mulai; agregat 4 sesi mulai, 5 estimasi selesai, 2 permintaan proposal berstatus `Baru`, dan 1 aturan harga `published`. Selisih satu estimasi selesai berasal dari uji harga publik.
 
 Pemeriksaan berikutnya: bedakan data uji dari prospek nyata di dashboard, pantau permintaan baru dan kesalahan aplikasi, lalu catat tindak lanjut tanpa menyalin data pribadi ke dokumen ini.
