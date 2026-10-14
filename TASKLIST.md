@@ -62,7 +62,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Tanyakan apakah beberapa objek berbagi target/backend. Jika ya atau belum tahu, tahan angka dan estimasi hari untuk pemeriksaan manusia; jika terpisah, hitung tiap objek.
 - [x] Validasi angka dan pilihan di server; tangani jawaban kosong, “Belum tahu”, jumlah nol, dan input di luar batas.
 - [x] Pastikan pengiriman berulang tidak membuat permintaan proposal ganda.
-- [ ] Perkuat pembatasan permintaan dan pencegahan spam sebelum produksi; penanganan dasar sudah ada.
+- [x] Perkuat pembatasan permintaan per pengunjung di belakang Traefik, batas khusus login dan proposal, pembersihan penghitung, serta kolom perangkap bot tanpa langkah tambahan bagi klien.
 
 **Selesai bila:** contoh perhitungan yang disetujui menghasilkan hasil yang benar dan estimasi lama tidak berubah ketika aturan baru diterbitkan.
 
@@ -93,7 +93,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [ ] Uji contoh harga yang disetujui Cankonix. Batas minimum, perubahan versi aturan, dan pengiriman ganda sudah diuji dengan data sintetis.
 - [x] Uji hak akses admin, tautan privat, masa berlaku token, dan pencatatan aktivitas melalui API lokal.
 - [x] Uji metrik dashboard terhadap data permintaan sintetis yang dibuat saat pengujian.
-- [ ] Jalankan pemeriksaan build dan pengujian yang tersedia; lakukan pemeriksaan langsung di browser pada desktop dan ponsel.
+- [ ] Jalankan pemeriksaan langsung di browser pada desktop dan ponsel; tes API, pemeriksaan sintaks JavaScript, dan build Docker tersedia di CI/CD sudah lulus.
 - [x] Periksa file yang dilacak Git: `.env`, SQLite, benchmark privat, dan workbook sumber diabaikan; tidak ada data klien nyata yang dimasukkan ke repo.
 
 Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalankan dengan `npm test`. Pengujian browser desktop/ponsel dan contoh proyek Cankonix tetap diperlukan sebelum rilis.
@@ -113,4 +113,4 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Verifikasi artefak backup SQLite sesudah deploy kedua; file ditemukan di VPS dan `PRAGMA integrity_check` menghasilkan `ok`.
 - [ ] Pantau log serta metrik setelah rilis dan catat masalah beserta tindak lanjutnya.
 
-**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Pemeriksaan browser desktop/ponsel, pembatasan spam, dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.
+**Status rilis:** sistem live. Harga otomatis tetap tersembunyi sampai draf tarif dikalibrasi dan diterbitkan oleh admin. Pemeriksaan browser desktop/ponsel dan keputusan kebijakan prospek masih perlu diselesaikan sebelum promosi luas ke klien.

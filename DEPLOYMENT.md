@@ -8,6 +8,8 @@ Workflow `.github/workflows/ci-cd.yml` menjalankan `npm test` dan build Docker u
 
 File `.env` produksi berada di VPS, di luar Git, dengan izin `600`. Pipeline tidak menimpa file ini. Password admin dan draf tarif tidak dicatat dalam workflow atau repo. Harga draf harus diterbitkan oleh admin secara terpisah setelah disetujui.
 
+Compose produksi menetapkan `TRUST_PROXY=true` karena aplikasi hanya menerima lalu lintas publik melalui Traefik dan tidak membuka port host. Ini memungkinkan pembatasan permintaan memakai IP pengunjung dari `X-Forwarded-For`. Bila topologi proxy berubah, periksa kembali pengaturan ini agar header dari pengunjung tidak dipercaya langsung. Instalasi lokal memakai `TRUST_PROXY=false`.
+
 ## Deploy dan pemeriksaan
 
 Script deploy memvalidasi Compose, membangun image baru, menghentikan container lama bila ada, menyalin isi volume SQLite ke `/root/cankonix-node/backups/cankonix-kompas/<waktu-UTC>/`, lalu menjalankan image baru. Pemeriksaan internal `/api/health` dan HTTPS domain harus lulus. Jika pemeriksaan gagal dan image lama tersedia, script mengembalikan image lama.

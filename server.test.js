@@ -22,7 +22,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
   const dataDir = mkdtempSync(path.join(tmpdir(), 'kompas-test-'))
   const port = await freePort()
   const base = `http://127.0.0.1:${port}`
-  const child = spawn(process.execPath, ['server.js'], { cwd: process.cwd(), env: { ...process.env, PORT:String(port), DATA_DIR:dataDir, ADMIN_EMAIL:'admin@test.local', ADMIN_PASSWORD:'test-password-strong-12345', SALES_EMAIL:'sales@test.local', SALES_PASSWORD:'sales-password-strong-12345', PRICING_SEED_JSON:JSON.stringify(rules), COOKIE_SECURE:'false' }, stdio:'ignore' })
+  const child = spawn(process.execPath, ['server.js'], { cwd: process.cwd(), env: { ...process.env, PORT:String(port), DATA_DIR:dataDir, ADMIN_EMAIL:'admin@test.local', ADMIN_PASSWORD:'test-password-strong-12345', SALES_EMAIL:'sales@test.local', SALES_PASSWORD:'sales-password-strong-12345', PRICING_SEED_JSON:JSON.stringify(rules), COOKIE_SECURE:'false', TRUST_PROXY:'true' }, stdio:'ignore' })
   const call = async (url, method = 'GET', body, cookie = '') => {
     const response = await fetch(base + url, { method, headers: { ...(body ? { 'content-type':'application/json' } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined })
     return { status:response.status, data:await response.json(), cookie:response.headers.get('set-cookie') }
@@ -50,6 +50,7 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
 
     const contact = { name:'Penguji', company:'Contoh PT', email:'penguji@example.com' }
     const requestBody = { scope:scope(), contact, consent:true, idempotencyKey:'request-1234567890' }
+    assert.equal((await call('/api/requests', 'POST', { ...requestBody, website:'spam.example' })).status, 400)
     const request = await call('/api/requests', 'POST', requestBody)
     assert.equal(request.status, 201)
     assert.match(request.data.id, /^KMP-\d{4}-[A-F0-9]{32}$/)
@@ -124,6 +125,14 @@ test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () =>
     db.prepare('UPDATE requests SET token_expires_at=?,access_code_expires_at=? WHERE id=?').run('2000-01-01T00:00:00.000Z', '2000-01-01T00:00:00.000Z', request.data.id)
     db.close()
     assert.equal((await call(renewedUrl)).status, 404)
+
+    const fromIp = (address, pathname, body) => fetch(base + pathname, { method:'POST', headers:{ 'content-type':'application/json', 'x-forwarded-for':address }, body:JSON.stringify(body) }).then(response => response.status)
+    for (let i = 0; i < 10; i++) assert.equal(await fromIp('192.0.2.10', '/api/requests', {}), 400)
+    assert.equal(await fromIp('192.0.2.10', '/api/requests', {}), 429)
+    assert.equal(await fromIp('192.0.2.11', '/api/requests', {}), 400)
+    for (let i = 0; i < 8; i++) assert.equal(await fromIp('192.0.2.12', '/api/admin/login', { email:'admin@test.local', password:'wrong' }), 401)
+    assert.equal(await fromIp('192.0.2.12', '/api/admin/login', { email:'admin@test.local', password:'wrong' }), 429)
+    assert.equal(await fromIp('192.0.2.13', '/api/admin/login', { email:'admin@test.local', password:'test-password-strong-12345' }), 200)
   } finally {
     if (child.exitCode === null && child.signalCode === null) {
       child.kill('SIGTERM')

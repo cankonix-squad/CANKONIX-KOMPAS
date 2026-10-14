@@ -9,6 +9,7 @@ services:
       PORT: 4173
       DATA_DIR: /data
       COOKIE_SECURE: "true"
+      TRUST_PROXY: "true"
     volumes:
       - kompas_data:/data
     networks:

@@ -2,6 +2,7 @@ import http from 'node:http'
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
+import net from 'node:net'
 import { fileURLToPath } from 'node:url'
 import { DatabaseSync } from 'node:sqlite'
 import { calculate, validateRules, validateScope } from './pricing.js'
@@ -75,21 +76,35 @@ function recordEvent(kind, sessionId) {
   db.prepare('INSERT INTO events(kind,session_id,created_at) SELECT ?,?,? WHERE NOT EXISTS(SELECT 1 FROM events WHERE kind=? AND session_id=?)').run(kind, sessionId, now(), kind, sessionId)
 }
 const rateState = new Map()
-function limited(req, name, max = 40) {
-  const key = `${req.socket.remoteAddress}:${name}`
+const clientIp = req => {
+  const direct = req.socket.remoteAddress || 'unknown'
+  if (process.env.TRUST_PROXY !== 'true') return direct
+  const forwarded = req.headers['x-forwarded-for']
+  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded || '').split(',')[0].trim()
+  return net.isIP(first) ? first : direct
+}
+function limited(req, name, max, windowMs = 60000) {
+  const key = `${clientIp(req)}:${name}`
   const time = Date.now()
   const state = rateState.get(key) || { start: time, count: 0 }
-  if (time - state.start > 60000) { state.start = time; state.count = 0 }
+  if (time - state.start >= windowMs) { state.start = time; state.count = 0 }
   state.count++
   rateState.set(key, state)
   return state.count > max
 }
+setInterval(() => {
+  const time = Date.now()
+  for (const [key, state] of rateState) if (time - state.start > 3600000) rateState.delete(key)
+}, 60000).unref()
 const route = async (req, res) => {
   const url = new URL(req.url, 'http://localhost')
   const pathname = url.pathname
   if (pathname.startsWith('/api/')) {
     if (req.method !== 'GET' && req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) return error(res, 403, 'Asal permintaan tidak diizinkan.')
-    if (req.method !== 'GET' && limited(req, pathname, pathname === '/api/admin/login' ? 8 : 40)) return error(res, 429, 'Terlalu banyak permintaan. Coba lagi sebentar.')
+    if (limited(req, 'api-all', 180)) return error(res, 429, 'Terlalu banyak permintaan. Coba lagi sebentar.')
+    const routeLimit = pathname === '/api/admin/login' ? 8 : pathname === '/api/requests' && req.method === 'POST' ? 10 : pathname === '/api/tickets/resolve' ? 20 : pathname.startsWith('/api/requests/') ? 60 : 40
+    if (limited(req, `${req.method}:${pathname}`, routeLimit)) return error(res, 429, 'Terlalu banyak permintaan. Coba lagi sebentar.')
+    if (pathname === '/api/requests' && req.method === 'POST' && limited(req, 'proposal-hour', 30, 3600000)) return error(res, 429, 'Terlalu banyak permintaan proposal. Coba lagi nanti.')
     if (req.method === 'GET' && pathname === '/api/health') return json(res, 200, { ok: true })
     if (req.method === 'POST' && pathname === '/api/events/start') { recordEvent('start', String((await parseBody(req)).sessionId || '')); return json(res, 201, { ok: true }) }
     if (req.method === 'POST' && pathname === '/api/estimate') {
@@ -102,6 +117,7 @@ const route = async (req, res) => {
     }
     if (req.method === 'POST' && pathname === '/api/requests') {
       const body = await parseBody(req)
+      if (String(body.website || '').trim()) return error(res, 400, 'Permintaan tidak dapat diproses.')
       const scope = validateScope(body.scope)
       const contact = {
         name: String(body.contact?.name || '').trim().slice(0, 120),
