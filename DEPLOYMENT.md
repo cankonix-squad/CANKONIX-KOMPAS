@@ -26,6 +26,6 @@ Uji pemulihan tanpa menyentuh volume produksi: dari folder aplikasi VPS jalankan
 
 ## Peringatan otomatis
 
-Workflow `KOMPAS Monitor` memeriksa `https://kompas.cankonix.com/api/health` setiap 15 menit (menit 7, 22, 37, dan 52 UTC) dan menerima hasil workflow `KOMPAS CI/CD` pada branch `main`. Jika layanan atau pipeline gagal, workflow membuka GitHub Issue per jenis gangguan; issue yang masih terbuka tidak digandakan. Pemeriksaan berhasil berikutnya menutup issue terkait. Detail issue hanya berisi URL run dan waktu, tanpa data klien atau rahasia. Jalankan workflow secara manual untuk uji kesehatan; opsi `test_alert` menguji pembuatan dan penutupan issue uji.
+Workflow `KOMPAS Monitor` memeriksa `https://kompas.cankonix.com/api/health` setiap 15 menit (menit 7, 22, 37, dan 52 UTC) dan menerima hasil workflow `KOMPAS CI/CD` pada branch `main`. Jika layanan atau pipeline gagal, workflow membuka GitHub Issue per jenis gangguan dan menugaskannya kepada akun pemilik repo `cankonix-squad`; issue yang masih terbuka tidak digandakan. Pemeriksaan berhasil berikutnya menutup issue terkait. Detail issue hanya berisi URL run dan waktu, tanpa data klien atau rahasia. Jalankan workflow secara manual untuk uji kesehatan; opsi `test_alert` menguji pembuatan dan penutupan issue uji.
 
 Pantau [GitHub Issues](https://github.com/cankonix-squad/CANKONIX-KOMPAS/issues) dan aktifkan notifikasi repository pada akun penanggung jawab. GitHub Actions terjadwal dapat tertunda atau terlewat saat beban tinggi, sehingga ini bukan pemantauan real-time atau satu-satunya kanal insiden.

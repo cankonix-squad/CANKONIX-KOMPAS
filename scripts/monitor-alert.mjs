@@ -60,7 +60,8 @@ if (status === 'failure') {
         : 'Workflow CI/CD KOMPAS pada branch main gagal. Periksa tahap tes, build, atau deploy.'
     const issue = await api('POST', '/issues', {
       title,
-      body: `${description}\n\nRun pemeriksaan: ${runUrl}\nWaktu UTC: ${new Date().toISOString()}\n\nIssue ini akan ditutup otomatis setelah pemeriksaan berikutnya berhasil.`
+      body: `${description}\n\nRun pemeriksaan: ${runUrl}\nWaktu UTC: ${new Date().toISOString()}\n\nIssue ini akan ditutup otomatis setelah pemeriksaan berikutnya berhasil.`,
+      assignees: [repository.split('/')[0]]
     })
     recordIssueNumber(issue.number)
     console.log(`Peringatan dibuat: #${issue.number}`)
