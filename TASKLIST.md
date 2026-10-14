@@ -84,12 +84,14 @@ DNS `kompas.cankonix.com` sudah mengarah ke `187.77.127.202` pada pemeriksaan 14
 
 ## 7. Uji dan terima secara lokal
 
-- [ ] Uji alur setiap jenis objek, gabungan objek, “Belum tahu”, dan kasus yang wajib ditinjau manual.
-- [ ] Uji contoh harga yang disetujui, batas minimum, perubahan versi aturan, dan pengiriman ganda.
-- [ ] Uji hak akses admin, tautan privat, masa berlaku token, dan pencatatan aktivitas.
-- [ ] Uji metrik dashboard terhadap data permintaan yang dibuat saat pengujian.
+- [x] Uji API untuk setiap jenis objek, gabungan objek, “Belum tahu”, dan kasus yang wajib ditinjau manual.
+- [ ] Uji contoh harga yang disetujui Cankonix. Batas minimum, perubahan versi aturan, dan pengiriman ganda sudah diuji dengan data sintetis.
+- [x] Uji hak akses admin, tautan privat, masa berlaku token, dan pencatatan aktivitas melalui API lokal.
+- [x] Uji metrik dashboard terhadap data permintaan sintetis yang dibuat saat pengujian.
 - [ ] Jalankan pemeriksaan build dan pengujian yang tersedia; lakukan pemeriksaan langsung di browser pada desktop dan ponsel.
-- [ ] Periksa bahwa file rahasia, data klien nyata, dan kredensial tidak masuk ke Git.
+- [x] Periksa file yang dilacak Git: `.env`, SQLite, benchmark privat, dan workbook sumber diabaikan; tidak ada data klien nyata yang dimasukkan ke repo.
+
+Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalankan dengan `npm test`. Pengujian browser desktop/ponsel dan contoh proyek Cankonix tetap diperlukan sebelum rilis.
 
 **Selesai bila:** kriteria penerimaan MVP di PRD terpenuhi dan hasil pengujian lokal dicatat.
 

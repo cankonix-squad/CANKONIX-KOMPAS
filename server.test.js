@@ -1,0 +1,112 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import net from 'node:net'
+import { DatabaseSync } from 'node:sqlite'
+
+const rules = { days:{web:3,api:2,mobile:4,infra:2}, methodDays:{black:0,gray:1,white:2}, rate:1000000, minimum:2000000, uncertainty:0.1, extraRoleDays:0.5, productionDays:1, afterHoursDays:1, onsiteDays:1, sizeUnit:10, sizeDays:0.5 }
+const scope = (type = 'web') => ({ objects:[{type,count:1,size:10}], method:'black', environment:'staging', access:'internet', window:'business', roles:1 })
+
+async function freePort() {
+  const server = net.createServer()
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  const port = server.address().port
+  await new Promise(resolve => server.close(resolve))
+  return port
+}
+
+test('alur lokal klien, admin, dan versi harga', { timeout: 20000 }, async () => {
+  const dataDir = mkdtempSync(path.join(tmpdir(), 'kompas-test-'))
+  const port = await freePort()
+  const base = `http://127.0.0.1:${port}`
+  const child = spawn(process.execPath, ['server.js'], { cwd: process.cwd(), env: { ...process.env, PORT:String(port), DATA_DIR:dataDir, ADMIN_EMAIL:'admin@test.local', ADMIN_PASSWORD:'test-password-strong-12345', SALES_EMAIL:'sales@test.local', SALES_PASSWORD:'sales-password-strong-12345', PRICING_SEED_JSON:JSON.stringify(rules), COOKIE_SECURE:'false' }, stdio:'ignore' })
+  const call = async (url, method = 'GET', body, cookie = '') => {
+    const response = await fetch(base + url, { method, headers: { ...(body ? { 'content-type':'application/json' } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined })
+    return { status:response.status, data:await response.json(), cookie:response.headers.get('set-cookie') }
+  }
+  try {
+    let ready = false
+    for (let attempt = 0; attempt < 100; attempt++) {
+      try { if ((await call('/api/health')).status === 200) { ready = true; break } } catch {}
+      if (child.exitCode !== null) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    assert.ok(ready, 'server pengujian harus siap')
+
+    for (const type of ['web','api','mobile','infra']) {
+      assert.equal((await call('/api/events/start', 'POST', { sessionId:`session-${type}-1234567890` })).status, 201)
+      const estimate = await call('/api/estimate', 'POST', { ...scope(type), sessionId:`session-${type}-1234567890` })
+      assert.equal(estimate.status, 200)
+      assert.equal(estimate.data.result.status, 'review')
+      assert.equal(estimate.data.result.low, null)
+    }
+    const shared = await call('/api/estimate', 'POST', { ...scope(), objects:[...scope().objects,{type:'api',count:1,size:10}], sharedTarget:'yes', sessionId:'session-shared-1234567890' })
+    assert.equal(shared.data.result.days, null)
+    const unknown = await call('/api/estimate', 'POST', { ...scope(), objects:[{type:'web',count:1,size:'unknown'}], sessionId:'session-unknown-1234567890' })
+    assert.equal(unknown.data.result.status, 'review')
+
+    const contact = { name:'Penguji', company:'Contoh PT', email:'penguji@example.com' }
+    const requestBody = { scope:scope(), contact, consent:true, idempotencyKey:'request-1234567890' }
+    const request = await call('/api/requests', 'POST', requestBody)
+    assert.equal(request.status, 201)
+    assert.equal(request.data.id.startsWith('KMP-'), true)
+    const duplicate = await call('/api/requests', 'POST', requestBody)
+    assert.equal(duplicate.status, 200)
+    assert.equal(duplicate.data.id, request.data.id)
+    assert.equal(duplicate.data.duplicate, true)
+    assert.equal((await call(`/api/requests/${request.data.id}?token=wrong`)).status, 404)
+    const privateUrl = `/api/requests/${request.data.id}?token=${encodeURIComponent(request.data.token)}`
+    assert.equal((await call(privateUrl)).status, 200)
+    assert.equal((await call(privateUrl, 'PATCH', { targets:'contoh.test' })).status, 200)
+
+    assert.equal((await call('/api/admin/summary')).status, 401)
+    const login = await call('/api/admin/login', 'POST', { email:'admin@test.local', password:'test-password-strong-12345' })
+    assert.equal(login.status, 200)
+    const adminCookie = login.cookie.split(';')[0]
+    const summary = await call('/api/admin/summary', 'GET', undefined, adminCookie)
+    assert.equal(summary.data.counts.start, 4)
+    assert.equal(summary.data.counts.complete, 6)
+    assert.equal(summary.data.counts.proposal, 1)
+    assert.equal(summary.data.requests.length, 1)
+    const detail = await call(`/api/admin/requests/${request.data.id}`, 'GET', undefined, adminCookie)
+    assert.equal(detail.data.details.targets, 'contoh.test')
+    assert.ok(detail.data.activity.some(item => item.action === 'details'))
+    const salesLogin = await call('/api/admin/login', 'POST', { email:'sales@test.local', password:'sales-password-strong-12345' })
+    assert.equal((await call('/api/admin/rules', 'GET', undefined, salesLogin.cookie.split(';')[0])).status, 403)
+
+    const publish = await call('/api/admin/rules/publish', 'POST', { version:1 }, adminCookie)
+    assert.equal(publish.status, 200)
+    const priced = await call('/api/estimate', 'POST', { ...scope(), sessionId:'session-priced-1234567890' })
+    assert.equal(priced.data.result.status, 'estimate')
+    assert.equal(priced.data.result.rulesVersion, 1)
+    const oldDetail = await call(`/api/admin/requests/${request.data.id}`, 'GET', undefined, adminCookie)
+    assert.equal(oldDetail.data.result.rulesVersion, null)
+    assert.equal(oldDetail.data.result.low, null)
+    const revised = await call('/api/admin/rules', 'POST', { ...rules, rate:1500000 }, adminCookie)
+    assert.equal(revised.data.version, 2)
+    const stillPublished = await call('/api/estimate', 'POST', { ...scope(), sessionId:'session-draft-1234567890' })
+    assert.equal(stillPublished.data.result.rulesVersion, 1)
+    assert.equal((await call('/api/admin/rules/publish', 'POST', { version:2 }, adminCookie)).status, 200)
+    const newPrice = await call('/api/estimate', 'POST', { ...scope(), sessionId:'session-version-1234567890' })
+    assert.equal(newPrice.data.result.rulesVersion, 2)
+    assert.ok(newPrice.data.result.low > priced.data.result.low)
+    const raisedMinimum = await call('/api/admin/rules', 'POST', { ...rules, minimum:20000000 }, adminCookie)
+    assert.equal((await call('/api/admin/rules/publish', 'POST', { version:raisedMinimum.data.version }, adminCookie)).status, 200)
+    const floor = await call('/api/estimate', 'POST', { ...scope(), sessionId:'session-minimum-1234567890' })
+    assert.equal(floor.data.result.low, 20000000)
+    assert.equal(floor.data.result.high, 20000000)
+    const db = new DatabaseSync(path.join(dataDir, 'kompas.sqlite'))
+    db.prepare('UPDATE requests SET token_expires_at=? WHERE id=?').run('2000-01-01T00:00:00.000Z', request.data.id)
+    db.close()
+    assert.equal((await call(privateUrl)).status, 404)
+  } finally {
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill('SIGTERM')
+      await new Promise(resolve => child.once('exit', resolve))
+    }
+    rmSync(dataDir, { recursive:true, force:true })
+  }
+})

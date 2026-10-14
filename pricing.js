@@ -81,7 +81,7 @@ export function calculate(scope, rules, version = null) {
   if (scope.access === 'onsite') days += rules.onsiteDays
   days = Math.round(days * 10) / 10
   if (needsReview.length) return { status: 'review', reasons: needsReview, days: scope.objects.length > 1 && scope.sharedTarget !== 'no' ? null : days, low: null, high: null, rulesVersion: version }
-  const base = Math.max(rules.minimum, days * rules.rate)
+  const base = days * rules.rate
   const round = n => Math.round(n / 100000 + 1e-9) * 100000
   return { status: 'estimate', reasons: [], days, low: round(Math.max(rules.minimum, base * (1 - rules.uncertainty))), high: round(Math.max(rules.minimum, base * (1 + rules.uncertainty))), rulesVersion: version }
 }
