@@ -47,6 +47,7 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Simpan progres sementara pada perangkat dan sediakan ringkasan sebelum menghitung.
 - [x] Buat hasil berisi kisaran biaya atau “Perlu ditinjau”, estimasi hari kerja, asumsi, dan tombol “Minta proposal”.
 - [x] Pindahkan pengisian data diri dan perusahaan ke bagian atas halaman pertama: nama lengkap, perusahaan, dan email kerja wajib; jabatan serta nomor telepon opsional. Tampilkan ringkasan dan opsi ubah pada halaman hasil; persetujuan tetap diberikan saat meminta proposal. Data kontak baru dikirim ke server setelah permintaan dikirim.
+- [x] Sediakan kartu data diri yang dapat dibuka dan ditutup; tampilkan keterangan “(Opsional)” sejajar dengan label jabatan dan telepon. Jika data wajib kurang, kartu terbuka kembali dan fokus menuju kolom yang perlu diperbaiki.
 - [ ] Tinjau tampilan dan alur data diri baru di desktop/ponsel bersama pemilik produk setelah deploy.
 - [x] Sediakan bagian di halaman utama untuk memasukkan nomor tiket KMP baru dan membuka kembali permintaan; tautan privat lama tetap didukung.
 - [x] Gunakan nomor tiket baru dengan kode acak 128 bit sebagai akses rahasia selama 30 hari; tiket pendek lama tetap memerlukan token pada tautan privat.
