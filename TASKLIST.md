@@ -75,7 +75,9 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Batasi pengaturan harga menurut peran dan catat setiap perubahan; admin dapat menyimpan draf lalu menerbitkannya secara terpisah.
 - [x] Admin/sales dapat menyiapkan harga penawaran final, ringkasan cakupan, dan masa berlaku; penerbitan dicatat dan draf tidak terlihat oleh klien.
 - [x] Sediakan ekspor CSV untuk admin/sales; akses tanpa login dan peran lain ditolak.
-- [ ] Tambahkan halaman **Pengguna internal** khusus pemilik sistem: undang beberapa Admin/Sales/Reviewer/Pengelola harga, ubah peran, nonaktifkan akun, dan cabut sesi aktif. Gunakan undangan sekali pakai, hash password dengan salt, catat audit, serta cegah penonaktifan pemilik terakhir. Saat ini hanya satu akun per peran yang dapat diatur lewat `.env` server.
+- [x] Tambahkan halaman **Pengguna internal** khusus pemilik sistem: undang beberapa Admin/Sales/Reviewer/Pengelola harga, ubah peran, nonaktifkan akun, dan cabut sesi aktif. Undangan sekali pakai berlaku 24 jam; password di-hash dengan salt; perubahan tercatat dalam riwayat; akun pemilik tidak dapat dinonaktifkan. Akun awal dari `.env` dimigrasikan satu kali ke database.
+- [x] Sediakan penggantian password mandiri yang mencabut seluruh sesi akun.
+- [ ] Tinjau langsung alur undangan pengguna baru dan tampilan tabel akun pada desktop/ponsel setelah rilis fitur.
 
 **Selesai bila:** admin dapat memantau jumlah pengisi dan menindaklanjuti satu permintaan dari awal sampai keputusan akhir.
 

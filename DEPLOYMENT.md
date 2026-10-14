@@ -8,6 +8,8 @@ Workflow `.github/workflows/ci-cd.yml` menjalankan `npm test` dan build Docker u
 
 File `.env` produksi berada di VPS, di luar Git, dengan izin `600`. Pipeline tidak menimpa file ini. Password admin dan draf tarif tidak dicatat dalam workflow atau repo. Harga draf harus diterbitkan oleh admin secara terpisah setelah disetujui.
 
+Saat rilis fitur Pengguna internal, akun awal dari `.env` disalin satu kali ke tabel `users` di SQLite dengan password yang di-hash. Sesi yang sudah ada tetap berlaku selama akunnya aktif. Setelah migrasi, perubahan password dilakukan dari dashboard, bukan dengan mengedit `.env`; semua sesi akun akan dicabut. Pemilik sistem dapat membuat tautan undangan sekali pakai selama 24 jam dan membagikannya secara privat. Backup sebelum deploy mencakup tabel dan riwayat akun ini.
+
 Compose produksi menetapkan `TRUST_PROXY=true` karena aplikasi hanya menerima lalu lintas publik melalui Traefik dan tidak membuka port host. Ini memungkinkan pembatasan permintaan memakai IP pengunjung dari `X-Forwarded-For`. Bila topologi proxy berubah, periksa kembali pengaturan ini agar header dari pengunjung tidak dipercaya langsung. Instalasi lokal memakai `TRUST_PROXY=false`.
 
 ## Deploy dan pemeriksaan

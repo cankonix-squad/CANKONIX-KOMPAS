@@ -6,12 +6,14 @@ Aplikasi estimasi cakupan pentest Cankonix. Lihat [PRD.md](PRD.md) dan [TASKLIST
 
 Memerlukan Node.js 24 atau lebih baru. Tidak ada langkah `npm install` karena aplikasi memakai modul bawaan Node.js.
 
-1. Salin `.env.example` menjadi `.env`, lalu isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` dengan nilai lokal yang kuat. Akun `SALES_*`, `REVIEWER_*`, dan `PRICING_*` bersifat opsional; setiap password harus minimal 16 karakter.
+1. Salin `.env.example` menjadi `.env`, lalu isi `ADMIN_EMAIL` dan `ADMIN_PASSWORD` dengan nilai lokal yang kuat. Akun `SALES_*`, `REVIEWER_*`, dan `PRICING_*` bersifat opsional untuk instalasi awal; setiap password harus minimal 16 karakter.
 2. Jalankan `node --env-file=.env server.js`.
 3. Buka `http://localhost:4173/` untuk formulir dan `http://localhost:4173/admin` untuk dashboard.
 4. Jalankan `npm test` untuk menguji kalkulasi, validasi, dan alur API dengan database sementara.
 
 Data tersimpan dalam `data/kompas.sqlite`, yang diabaikan Git. `PRICING_SEED_JSON` pada `.env` dapat dipakai untuk membuat draf harga pada instalasi baru; kosongkan bila admin akan mengisi draf dari dashboard. [Referensi harga pasar](MARKET_REFERENCES.md) tidak menetapkan tarif Cankonix. Selama draf belum diterbitkan, hasil klien selalu **Perlu ditinjau**. Admin dapat mengubah draf lalu menerbitkan versinya setelah tarif internal disetujui. Jangan gunakan `.env.example` sebagai kredensial produksi.
+
+Akun dari `.env` hanya dipakai untuk membuat pengguna awal ketika tabel pengguna masih kosong. Setelah itu, login memakai akun database. Pemilik sistem membuka **Pengguna internal** di dashboard untuk membuat undangan sekali pakai bagi Admin, Sales, Reviewer teknis, atau Pengelola harga. Tautan undangan ditampilkan sekali, berlaku 24 jam, dan perlu dibagikan secara privat. Pemilik dapat mengubah peran, menonaktifkan akun, mencabut sesi, dan melihat riwayat perubahan. Setiap pengguna dapat mengganti password sendiri; semua sesinya akan dicabut. Mengubah password pada `.env` setelah akun awal dibuat tidak mengganti password login database.
 
 Di dashboard, admin dapat meninjau angka, memilih **Lihat contoh harga**, lalu **Simpan draf**. Tombol **Terbitkan draf untuk klien** memakai versi draf yang tersimpan; perubahan yang belum disimpan tidak ikut terbit. Setiap estimasi menyimpan versi aturan saat dihitung.
 

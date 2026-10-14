@@ -12,8 +12,24 @@ const post = (path, body) => api(path, { method: 'POST', body: JSON.stringify(bo
 
 let summary = null
 let ruleData = null
+let userData = null
 let user = null
 let range = { from: '', to: '' }
+const roles = { admin: 'Admin', sales: 'Sales', reviewer: 'Reviewer teknis', pricing: 'Pengelola harga' }
+
+function acceptInvitation(token) {
+  history.replaceState(null, '', '/admin')
+  root.innerHTML = `<section class="card" style="max-width:520px"><h2>Aktifkan akun KOMPAS</h2><p>Buat password untuk akun yang diundang. Tautan ini hanya dapat digunakan sekali.</p><label class="field">Password baru<input id="invite-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password<input id="invite-confirm" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><button class="button" id="activate-account">Aktifkan akun</button><p class="error" id="invite-error" role="alert"></p></section>`
+  document.querySelector('#activate-account').onclick = async () => {
+    const password = document.querySelector('#invite-password').value
+    const confirmation = document.querySelector('#invite-confirm').value
+    try {
+      if (password !== confirmation) throw new Error('Password yang diulang belum sama.')
+      await post('/api/admin/invitations/accept', { token, password })
+      login('Akun aktif. Silakan masuk dengan email dan password baru.')
+    } catch (err) { document.querySelector('#invite-error').textContent = err.message }
+  }
+}
 
 function login(message = '') {
   root.innerHTML = `<section class="card" style="max-width:420px">
@@ -40,12 +56,14 @@ async function load() {
     if (range.from) query.set('from', range.from)
     if (range.to) query.set('to', range.to)
     user = await api('/api/admin/me')
-    const [nextSummary, nextRules] = await Promise.all([
+    const [nextSummary, nextRules, nextUsers] = await Promise.all([
       api(`/api/admin/summary?${query}`),
-      ['admin', 'pricing'].includes(user.role) ? api('/api/admin/rules') : Promise.resolve(null)
+      ['admin', 'pricing'].includes(user.role) ? api('/api/admin/rules') : Promise.resolve(null),
+      user.owner ? api('/api/admin/users') : Promise.resolve(null)
     ])
     summary = nextSummary
     ruleData = nextRules
+    userData = nextUsers
     dashboard()
   } catch (err) {
     if (err.message.includes('masuk')) login()
@@ -74,6 +92,8 @@ function dashboard() {
     </div>
     <div class="table-wrap"><table><thead><tr><th>Referensi</th><th>Klien</th><th>Objek</th><th>Hasil</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="rows"></tbody></table></div>
   </section>
+  ${userData ? '<section class="card"><h2>Pengguna internal</h2><div id="users-panel"></div></section>' : ''}
+  <section class="card"><h2>Ubah password saya</h2><p class="muted">Setelah diganti, semua sesi akun ini akan keluar. Masuk kembali dengan password baru.</p><div class="fields"><label class="field">Password saat ini<input id="current-password" type="password" autocomplete="current-password"></label><label class="field">Password baru<input id="new-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password baru<input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label></div><button class="button secondary" id="change-password">Simpan password baru</button><p class="error" id="password-error" role="alert"></p></section>
   ${ruleData ? `<section class="card"><h2>Aturan harga internal</h2><div id="rules-form"></div></section>` : ''}`
 
   document.querySelector('#logout').onclick = async () => { await post('/api/admin/logout', {}); login() }
@@ -84,7 +104,48 @@ function dashboard() {
   document.querySelector('#search').oninput = renderRows
   document.querySelector('#status-filter').onchange = renderRows
   renderRows()
+  if (userData) renderUsers()
+  document.querySelector('#change-password').onclick = async () => {
+    try {
+      const newPassword = document.querySelector('#new-password').value
+      if (newPassword !== document.querySelector('#confirm-password').value) throw new Error('Password yang diulang belum sama.')
+      await post('/api/admin/password', { currentPassword: document.querySelector('#current-password').value, newPassword })
+      login('Password berhasil diganti. Silakan masuk kembali.')
+    } catch (err) { document.querySelector('#password-error').textContent = err.message }
+  }
   if (ruleData) renderRules()
+}
+
+function renderUsers() {
+  const options = Object.entries(roles).map(([value, label]) => `<option value="${value}">${label}</option>`).join('')
+  document.querySelector('#users-panel').innerHTML = `<p class="muted">Hanya pemilik sistem yang dapat mengelola akun. Undangan berlaku 24 jam dan tautannya ditampilkan sekali.</p>
+    <div class="fields"><label class="field">Email pengguna baru<input id="new-user-email" type="email" autocomplete="off" placeholder="nama@cankonix.com"></label><label class="field">Peran<select id="new-user-role">${options}</select></label></div>
+    <button class="button" id="invite-user">Buat undangan</button><p id="invite-result" role="status"></p><p id="users-error" class="error" role="alert"></p>
+    <div class="table-wrap"><table><thead><tr><th>Email</th><th>Peran</th><th>Status</th><th>Tindakan</th></tr></thead><tbody>${userData.users.map(item => `<tr><td>${escape(item.email)}${item.owner ? ' · Pemilik' : ''}</td><td>${item.owner ? escape(roles[item.role]) : `<select class="admin-filter" data-role="${escape(item.email)}">${Object.entries(roles).map(([value, label]) => `<option value="${value}" ${value === item.role ? 'selected' : ''}>${label}</option>`).join('')}</select>`}</td><td>${item.status === 'active' ? 'Aktif' : item.status === 'pending' ? `Menunggu aktivasi sampai ${escape(item.inviteExpiresAt?.slice(0, 10) || '-')}` : 'Nonaktif'}</td><td>${item.owner ? 'Akun pemilik' : item.status === 'active' ? `<div class="user-actions"><button class="button secondary" data-action="role" data-email="${escape(item.email)}">Simpan peran</button><button class="button secondary" data-action="sessions" data-email="${escape(item.email)}">Cabut sesi</button><button class="button secondary" data-action="disable" data-email="${escape(item.email)}">Nonaktifkan</button></div>` : `<button class="button secondary" data-action="reinvite" data-email="${escape(item.email)}">Buat undangan baru</button>`}</td></tr>`).join('')}</tbody></table></div>
+    <details><summary>Riwayat perubahan pengguna</summary><ul class="summary-list">${userData.activity.length ? userData.activity.map(entry => `<li>${new Date(entry.createdAt).toLocaleString('id-ID')} · ${escape(entry.detail)}</li>`).join('') : '<li>Belum ada perubahan.</li>'}</ul></details>`
+  const invite = async (email, role) => {
+    const value = await post('/api/admin/users/invite', { email, role })
+    await load()
+    const link = `${location.origin}/admin#invite=${encodeURIComponent(value.token)}`
+    const result = document.querySelector('#invite-result')
+    result.innerHTML = `<span>Salin tautan ini sekarang dan bagikan secara privat. Berlaku sampai ${escape(value.expiresAt)}.</span><input id="invite-link" class="admin-filter" readonly value="${escape(link)}"><button class="button secondary" id="copy-invite">Salin tautan</button>`
+    document.querySelector('#copy-invite').onclick = async () => { try { await navigator.clipboard.writeText(link); document.querySelector('#copy-invite').textContent = 'Tautan tersalin' } catch { document.querySelector('#invite-link').select() } }
+  }
+  document.querySelector('#invite-user').onclick = async () => {
+    try { await invite(document.querySelector('#new-user-email').value, document.querySelector('#new-user-role').value) }
+    catch (err) { document.querySelector('#users-error').textContent = err.message }
+  }
+  document.querySelectorAll('[data-action]').forEach(button => { button.onclick = async () => {
+    try {
+      const email = button.dataset.email
+      const action = button.dataset.action
+      if (action === 'reinvite') { const item = userData.users.find(entry => entry.email === email); await invite(email, item.role); return }
+      if (action === 'disable' && !confirm(`Nonaktifkan ${email}? Akun dan semua sesinya akan dicabut.`)) return
+      if (action === 'role') await post(`/api/admin/users/${encodeURIComponent(email)}/role`, { role: document.querySelector(`[data-role="${CSS.escape(email)}"]`).value })
+      else await post(`/api/admin/users/${encodeURIComponent(email)}/${action}`, {})
+      await load()
+    } catch (err) { document.querySelector('#users-error').textContent = err.message }
+  } })
 }
 
 function renderRows() {
@@ -215,4 +276,6 @@ function renderRules() {
   }
 }
 
-load()
+const invitation = new URLSearchParams(location.hash.slice(1)).get('invite')
+if (invitation) acceptInvitation(invitation)
+else load()

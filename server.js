@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS rules (version INTEGER PRIMARY KEY, value TEXT NOT NU
 CREATE TABLE IF NOT EXISTS requests (id TEXT PRIMARY KEY, token_hash TEXT NOT NULL, token_expires_at TEXT NOT NULL, idempotency_key TEXT NOT NULL UNIQUE, contact TEXT NOT NULL, scope TEXT NOT NULL, result TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Baru', owner TEXT NOT NULL DEFAULT '', notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY, request_id TEXT NOT NULL, action TEXT NOT NULL, detail TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, expires_at TEXT NOT NULL, email TEXT NOT NULL DEFAULT '', role TEXT NOT NULL DEFAULT 'admin');
+CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, role TEXT NOT NULL, password_hash TEXT, status TEXT NOT NULL, is_owner INTEGER NOT NULL DEFAULT 0, invite_hash TEXT, invite_expires_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_events_kind_date ON events(kind, created_at);
 CREATE INDEX IF NOT EXISTS idx_requests_date ON requests(created_at);`)
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_invite_hash ON users(invite_hash)')
 if (!db.prepare('PRAGMA table_info(requests)').all().some(column => column.name === 'details')) db.exec("ALTER TABLE requests ADD COLUMN details TEXT NOT NULL DEFAULT '{}'")
 for (const [column, definition] of [['offer_price', 'INTEGER'], ['offer_summary', "TEXT NOT NULL DEFAULT ''"], ['offer_valid_until', "TEXT NOT NULL DEFAULT ''"], ['offer_published_at', 'TEXT'], ['access_code_hash', 'TEXT'], ['access_code_expires_at', 'TEXT']]) {
   if (!db.prepare('PRAGMA table_info(requests)').all().some(item => item.name === column)) db.exec(`ALTER TABLE requests ADD COLUMN ${column} ${definition}`)
@@ -37,6 +39,13 @@ if (!db.prepare('SELECT 1 FROM rules LIMIT 1').get() && process.env.PRICING_SEED
 const now = () => new Date().toISOString()
 const hash = value => crypto.createHash('sha256').update(value).digest('hex')
 const random = () => crypto.randomBytes(32).toString('base64url')
+const passwordHash = password => { const salt = crypto.randomBytes(16).toString('hex'); return `${salt}:${crypto.scryptSync(password, salt, 64).toString('hex')}` }
+const passwordMatches = (password, stored) => {
+  if (!stored) return false
+  const [salt, value] = stored.split(':')
+  if (!/^[a-f0-9]{32}$/.test(salt || '') || !/^[a-f0-9]{128}$/.test(value || '')) return false
+  return crypto.timingSafeEqual(crypto.scryptSync(password, salt, 64), Buffer.from(value, 'hex'))
+}
 const json = (res, status, value, headers = {}) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers }); res.end(JSON.stringify(value)) }
 const error = (res, status, message) => json(res, status, { error: message })
 const parseBody = async req => {
@@ -51,15 +60,20 @@ const cookie = req => Object.fromEntries((req.headers.cookie || '').split(';').m
 const admin = req => {
   const token = cookie(req).kompas_session
   if (!token) return null
-  return db.prepare('SELECT email,role FROM sessions WHERE token_hash=? AND expires_at>?').get(hash(token), now()) || null
+  return db.prepare("SELECT users.email,users.role,users.is_owner AS owner FROM sessions JOIN users ON users.email=sessions.email WHERE sessions.token_hash=? AND sessions.expires_at>? AND users.status='active'").get(hash(token), now()) || null
 }
 const requireAdmin = (req, res, roles = ['admin', 'sales', 'reviewer', 'pricing']) => { const user = admin(req); if (!user) { error(res, 401, 'Silakan masuk sebagai admin.'); return false } if (!roles.includes(user.role)) { error(res, 403, 'Anda tidak memiliki akses ke fitur ini.'); return false } return true }
+const requireOwner = (req, res) => { if (!requireAdmin(req, res)) return false; if (!admin(req).owner) { error(res, 403, 'Hanya pemilik sistem yang dapat mengelola pengguna.'); return false } return true }
 const accounts = [
   { role: 'admin', email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD },
   { role: 'sales', email: process.env.SALES_EMAIL, password: process.env.SALES_PASSWORD },
   { role: 'reviewer', email: process.env.REVIEWER_EMAIL, password: process.env.REVIEWER_PASSWORD },
   { role: 'pricing', email: process.env.PRICING_EMAIL, password: process.env.PRICING_PASSWORD }
 ].filter(item => item.email && item.password?.length >= 16)
+if (!db.prepare('SELECT 1 FROM users LIMIT 1').get()) {
+  const insert = db.prepare('INSERT INTO users(email,role,password_hash,status,is_owner,created_at,updated_at) VALUES(?,?,?,?,?,?,?)')
+  for (const account of accounts) insert.run(account.email.trim().toLowerCase(), account.role, passwordHash(account.password), 'active', account.role === 'admin' ? 1 : 0, now(), now())
+}
 const secure = process.env.COOKIE_SECURE === 'true' ? '; Secure' : ''
 const sessionCookie = (value, age) => `kompas_session=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure}`
 const currentRules = () => {
@@ -166,11 +180,23 @@ const route = async (req, res) => {
     }
     if (req.method === 'POST' && pathname === '/api/admin/login') {
       const body = await parseBody(req)
-      const account = accounts.find(item => item.email.toLowerCase() === String(body.email || '').toLowerCase())
-      if (!account || !crypto.timingSafeEqual(Buffer.from(hash(String(body.password || ''))), Buffer.from(hash(account.password)))) return error(res, 401, 'Email atau password tidak sesuai.')
+      const account = db.prepare("SELECT email,role,password_hash FROM users WHERE email=? AND status='active'").get(String(body.email || '').trim().toLowerCase())
+      const password = String(body.password || '')
+      if (password.length > 128 || !account || !passwordMatches(password, account.password_hash)) return error(res, 401, 'Email atau password tidak sesuai.')
       const token = random()
       db.prepare('INSERT INTO sessions(token_hash,expires_at,email,role) VALUES(?,?,?,?)').run(hash(token), new Date(Date.now() + 8 * 3600000).toISOString(), account.email, account.role)
       return json(res, 200, { ok: true, role: account.role }, { 'set-cookie': sessionCookie(token, 8 * 3600) })
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/invitations/accept') {
+      const body = await parseBody(req)
+      const token = String(body.token || '')
+      const password = String(body.password || '')
+      if (!/^[a-zA-Z0-9_-]{40,100}$/.test(token) || password.length < 16 || password.length > 128) return error(res, 400, 'Undangan atau password tidak valid. Gunakan password 16–128 karakter.')
+      const invited = db.prepare("SELECT email FROM users WHERE invite_hash=? AND invite_expires_at>? AND status='pending'").get(hash(token), now())
+      if (!invited) return error(res, 400, 'Undangan tidak tersedia atau sudah kedaluwarsa.')
+      db.prepare("UPDATE users SET password_hash=?,status='active',invite_hash=NULL,invite_expires_at=NULL,updated_at=? WHERE email=?").run(passwordHash(password), now(), invited.email)
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'user_activated', `Akun ${invited.email} mengaktifkan undangan`, now())
+      return json(res, 200, { ok: true })
     }
     if (req.method === 'POST' && pathname === '/api/admin/logout') {
       if (cookie(req).kompas_session) db.prepare('DELETE FROM sessions WHERE token_hash=?').run(hash(cookie(req).kompas_session))
@@ -178,6 +204,67 @@ const route = async (req, res) => {
     }
     if (pathname.startsWith('/api/admin/') && !requireAdmin(req, res)) return
     if (req.method === 'GET' && pathname === '/api/admin/me') return json(res, 200, admin(req))
+    if (req.method === 'POST' && pathname === '/api/admin/password') {
+      const body = await parseBody(req)
+      const current = String(body.currentPassword || '')
+      const replacement = String(body.newPassword || '')
+      if (current.length > 128 || replacement.length < 16 || replacement.length > 128 || current === replacement) return error(res, 400, 'Password baru harus berbeda dan berisi 16–128 karakter.')
+      const me = admin(req)
+      const stored = db.prepare('SELECT password_hash FROM users WHERE email=?').get(me.email)
+      if (!passwordMatches(current, stored.password_hash)) return error(res, 400, 'Password saat ini tidak sesuai.')
+      db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE email=?').run(passwordHash(replacement), now(), me.email)
+      db.prepare('DELETE FROM sessions WHERE email=?').run(me.email)
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'password_changed', `${me.email} mengganti password dan mencabut semua sesi`, now())
+      return json(res, 200, { ok: true })
+    }
+    if (req.method === 'GET' && pathname === '/api/admin/users') {
+      if (!requireOwner(req, res)) return
+      return json(res, 200, { users: db.prepare('SELECT email,role,status,is_owner AS owner,invite_expires_at AS inviteExpiresAt,created_at AS createdAt,updated_at AS updatedAt FROM users ORDER BY is_owner DESC,email').all(), activity: db.prepare("SELECT action,detail,created_at AS createdAt FROM activity WHERE request_id='USERS' ORDER BY id DESC LIMIT 50").all() })
+    }
+    if (req.method === 'POST' && pathname === '/api/admin/users/invite') {
+      if (!requireOwner(req, res)) return
+      const body = await parseBody(req)
+      const email = String(body.email || '').trim().toLowerCase()
+      const role = String(body.role || '')
+      if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return error(res, 400, 'Email pengguna tidak valid.')
+      if (!['admin', 'sales', 'reviewer', 'pricing'].includes(role)) return error(res, 400, 'Peran pengguna tidak valid.')
+      const existing = db.prepare('SELECT status,is_owner FROM users WHERE email=?').get(email)
+      if (existing?.is_owner || existing?.status === 'active') return error(res, 409, 'Akun sudah aktif. Ubah perannya dari daftar pengguna.')
+      const token = random()
+      const expiresAt = new Date(Date.now() + 24 * 3600000).toISOString()
+      const created = now()
+      if (existing) db.prepare("UPDATE users SET role=?,password_hash=NULL,status='pending',invite_hash=?,invite_expires_at=?,updated_at=? WHERE email=?").run(role, hash(token), expiresAt, created, email)
+      else db.prepare("INSERT INTO users(email,role,status,invite_hash,invite_expires_at,created_at,updated_at) VALUES(?,?,'pending',?,?,?,?)").run(email, role, hash(token), expiresAt, created, created)
+      db.prepare('DELETE FROM sessions WHERE email=?').run(email)
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'user_invited', `${admin(req).email} mengundang ${email} sebagai ${role}`, created)
+      return json(res, 201, { token, expiresAt })
+    }
+    const userAction = pathname.match(/^\/api\/admin\/users\/([^/]+)\/(role|disable|sessions)$/)
+    if (userAction && req.method === 'POST') {
+      if (!requireOwner(req, res)) return
+      const email = decodeURIComponent(userAction[1]).toLowerCase()
+      const target = db.prepare('SELECT email,status,is_owner,role FROM users WHERE email=?').get(email)
+      if (!target) return error(res, 404, 'Pengguna tidak ditemukan.')
+      if (userAction[2] === 'sessions') {
+        db.prepare('DELETE FROM sessions WHERE email=?').run(email)
+        db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'sessions_revoked', `${admin(req).email} mencabut sesi ${email}`, now())
+        return json(res, 200, { ok: true })
+      }
+      if (target.is_owner) return error(res, 403, 'Akun pemilik sistem tidak dapat diubah dari halaman ini.')
+      if (userAction[2] === 'disable') {
+        db.prepare("UPDATE users SET status='disabled',password_hash=NULL,invite_hash=NULL,invite_expires_at=NULL,updated_at=? WHERE email=?").run(now(), email)
+        db.prepare('DELETE FROM sessions WHERE email=?').run(email)
+        db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'user_disabled', `${admin(req).email} menonaktifkan ${email}`, now())
+        return json(res, 200, { ok: true })
+      }
+      const role = String((await parseBody(req)).role || '')
+      if (!['admin', 'sales', 'reviewer', 'pricing'].includes(role)) return error(res, 400, 'Peran pengguna tidak valid.')
+      if (target.status !== 'active') return error(res, 409, 'Aktifkan akun sebelum mengubah peran.')
+      db.prepare('UPDATE users SET role=?,updated_at=? WHERE email=?').run(role, now(), email)
+      db.prepare('DELETE FROM sessions WHERE email=?').run(email)
+      db.prepare('INSERT INTO activity(request_id,action,detail,created_at) VALUES(?,?,?,?)').run('USERS', 'user_role_changed', `${admin(req).email} mengubah peran ${email}: ${target.role} menjadi ${role}`, now())
+      return json(res, 200, { ok: true })
+    }
     if (req.method === 'GET' && pathname === '/api/admin/summary') {
       const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? `${url.searchParams.get('from')}T00:00:00.000Z` : '1970-01-01T00:00:00.000Z'
       const to = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('to') || '') ? `${url.searchParams.get('to')}T23:59:59.999Z` : now()
