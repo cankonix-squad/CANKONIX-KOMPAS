@@ -76,6 +76,8 @@ DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS
 - [x] Buat daftar prospek, pencarian/filter, detail jawaban, estimasi, penanggung jawab, catatan, dan riwayat status.
 - [x] Implementasikan status Baru, Perlu ditinjau, Dihubungi, Proposal dikirim, Menang, dan Tidak lanjut.
 - [x] Batasi pengaturan harga menurut peran dan catat setiap perubahan; admin dapat menyimpan draf lalu menerbitkannya secara terpisah.
+- [x] Tampilkan draf tarif yang sudah tersedia di menu **Aturan harga** beserta pratinjau 12 kombinasi objek/metode dan dampak kondisi tambahan; angka dapat diedit tanpa otomatis diterbitkan.
+- [x] Tambahkan navigasi sisi kiri pada dashboard admin untuk ringkasan, permintaan, pengguna, aturan harga, dan password; di ponsel menu menjadi baris yang dapat digeser.
 - [x] Admin/sales dapat menyiapkan harga penawaran final, ringkasan cakupan, dan masa berlaku; penerbitan dicatat dan draf tidak terlihat oleh klien.
 - [x] Sediakan ekspor CSV untuk admin/sales; akses tanpa login dan peran lain ditolak.
 - [x] Tambahkan halaman **Pengguna internal** khusus pemilik sistem: undang beberapa Admin/Sales/Reviewer/Pengelola harga, ubah peran, nonaktifkan akun, dan cabut sesi aktif. Undangan sekali pakai berlaku 24 jam; password di-hash dengan salt; perubahan tercatat dalam riwayat; akun pemilik tidak dapat dinonaktifkan. Akun awal dari `.env` dimigrasikan satu kali ke database.

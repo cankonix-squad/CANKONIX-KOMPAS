@@ -351,16 +351,34 @@ const route = async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/admin/rules/preview') {
       if (!requireAdmin(req, res, ['admin', 'pricing'])) return
       const rules = validateRules(await parseBody(req))
-      const scenarios = [
-        ['Web Black Box', 'web', 'black'], ['Web Gray Box', 'web', 'gray'],
-        ['Web White Box', 'web', 'white'], ['API Black Box', 'api', 'black'],
-        ['Mobile Gray Box', 'mobile', 'gray'], ['Infrastruktur Black Box', 'infra', 'black']
+      const objectNames = { web: 'Web Application', api: 'API', mobile: 'Mobile Application', infra: 'Infrastruktur' }
+      const methodNames = { black: 'Black Box', gray: 'Gray Box', white: 'White Box' }
+      const base = { objects: [{ type: 'web', count: 1, size: 10 }], method: 'gray', roles: 1, environment: 'staging', access: 'internet', window: 'business' }
+      const sample = (name, input) => ({ name, result: calculate(validateScope(input), rules) })
+      const samples = Object.entries(objectNames).flatMap(([type, label]) => ['black', 'gray', 'white'].map(method => sample(`${label} · ${methodNames[method]}`, { ...base, objects: [{ type, count: 1, size: 10, ...(type === 'mobile' ? { platform: 'android' } : {}) }], method })))
+      const conditions = [
+        sample('Web Gray Box · kondisi dasar', base),
+        sample('Dua peran pengguna', { ...base, roles: 2 }),
+        sample('20 fitur utama', { ...base, objects: [{ type: 'web', count: 1, size: 20 }] }),
+        sample('Dua Web Application', { ...base, objects: [{ type: 'web', count: 2, size: 10 }] }),
+        sample('Lingkungan production', { ...base, environment: 'production' }),
+        sample('Lingkungan lainnya', { ...base, environment: 'other' }),
+        sample('Di luar jam kerja', { ...base, window: 'after' }),
+        sample('Akses melalui VPN', { ...base, access: 'vpn' }),
+        sample('Cara akses belum diketahui', { ...base, access: 'unsure' }),
+        sample('Perlu onsite', { ...base, access: 'onsite' }),
+        sample('Metode belum dipilih', { ...base, method: 'unsure' }),
+        sample('Ukuran cakupan belum diketahui', { ...base, objects: [{ type: 'web', count: 1, size: 'unknown' }] }),
+        sample('Jumlah peran belum diketahui', { ...base, roles: 'unknown' }),
+        sample('Jadwal perlu dibahas', { ...base, window: 'discuss' }),
+        sample('Mobile iOS', { ...base, objects: [{ type: 'mobile', count: 1, size: 10, platform: 'ios' }] }),
+        sample('Android dan iOS', { ...base, objects: [{ type: 'mobile', count: 1, size: 10, platform: 'both' }] }),
+        sample('Platform mobile belum diketahui', { ...base, objects: [{ type: 'mobile', count: 1, size: 10, platform: 'unknown' }] }),
+        sample('Web dan API terpisah', { ...base, objects: [{ type: 'web', count: 1, size: 10 }, { type: 'api', count: 1, size: 10 }], sharedTarget: 'no' }),
+        sample('Web dan API berbagi backend', { ...base, objects: [{ type: 'web', count: 1, size: 10 }, { type: 'api', count: 1, size: 10 }], sharedTarget: 'yes' }),
+        sample('Hubungan Web dan API belum diketahui', { ...base, objects: [{ type: 'web', count: 1, size: 10 }, { type: 'api', count: 1, size: 10 }], sharedTarget: 'unknown' })
       ]
-      const samples = scenarios.map(([name, type, method]) => {
-        const scope = validateScope({ objects: [{ type, count: 1, size: 10, ...(type === 'mobile' ? { platform: 'android' } : {}) }], method, roles: 1, environment: 'staging', access: 'internet', window: 'business' })
-        return { name, result: calculate(scope, rules) }
-      })
-      return json(res, 200, { samples })
+      return json(res, 200, { samples, conditions })
     }
     if (req.method === 'POST' && pathname === '/api/admin/rules/publish') {
       if (!requireAdmin(req, res, ['admin', 'pricing'])) return

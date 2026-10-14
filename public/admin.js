@@ -74,13 +74,21 @@ async function load() {
 
 function dashboard() {
   const counts = summary.counts || {}
-  root.innerHTML = `<div class="stats">
+  root.innerHTML = `<div class="admin-layout"><nav class="admin-sidebar" aria-label="Menu admin">
+    <strong>KOMPAS Admin</strong>
+    <a href="#admin-overview">Ringkasan</a>
+    <a href="#admin-requests">Permintaan</a>
+    ${userData ? '<a href="#admin-users">Pengguna internal</a>' : ''}
+    ${ruleData ? '<a href="#admin-pricing">Aturan harga</a>' : ''}
+    <a href="#admin-password">Ubah password</a>
+    <button class="button secondary" id="logout">Keluar</button>
+  </nav><div class="admin-content"><div class="stats" id="admin-overview">
     <div class="card stat">Mulai mengisi<b>${counts.start || 0}</b></div>
     <div class="card stat">Estimasi selesai<b>${counts.complete || 0}</b></div>
     <div class="card stat">Minta proposal<b>${counts.proposal || 0}</b></div>
   </div>
-  <section class="card">
-    <div class="actions"><h2>Daftar permintaan</h2><button class="button secondary" id="logout">Keluar</button></div>
+  <section class="card" id="admin-requests">
+    <h2>Daftar permintaan</h2>
     <p class="muted">Masuk sebagai ${escape(user.email)} (${escape(user.role)}). Metrik menunjukkan peristiwa formulir, bukan pengunjung unik. Rentang tanggal dihitung dalam UTC.</p>
     <div class="fields">
       <label class="field">Dari tanggal<input type="date" id="from" value="${escape(range.from)}"></label>
@@ -93,9 +101,9 @@ function dashboard() {
     </div>
     <div class="table-wrap"><table><thead><tr><th scope="col">Referensi</th><th scope="col">Klien</th><th scope="col">Objek</th><th scope="col">Hasil</th><th scope="col">Status</th><th scope="col">Tanggal</th></tr></thead><tbody id="rows"></tbody></table></div>
   </section>
-  ${userData ? '<section class="card"><h2>Pengguna internal</h2><div id="users-panel"></div></section>' : ''}
-  <section class="card"><h2>Ubah password saya</h2><p class="muted">Setelah diganti, semua sesi akun ini akan keluar. Masuk kembali dengan password baru.</p><div class="fields"><label class="field">Password saat ini<input id="current-password" type="password" autocomplete="current-password"></label><label class="field">Password baru<input id="new-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password baru<input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label></div><button class="button secondary" id="change-password">Simpan password baru</button><p class="error" id="password-error" role="alert"></p></section>
-  ${ruleData ? `<section class="card"><h2>Aturan harga internal</h2><div id="rules-form"></div></section>` : ''}`
+  ${userData ? '<section class="card" id="admin-users"><h2>Pengguna internal</h2><div id="users-panel"></div></section>' : ''}
+  ${ruleData ? `<section class="card" id="admin-pricing"><h2>Aturan harga internal</h2><div id="rules-form"></div></section>` : ''}
+  <section class="card" id="admin-password"><h2>Ubah password saya</h2><p class="muted">Setelah diganti, semua sesi akun ini akan keluar. Masuk kembali dengan password baru.</p><div class="fields"><label class="field">Password saat ini<input id="current-password" type="password" autocomplete="current-password"></label><label class="field">Password baru<input id="new-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label><label class="field">Ulangi password baru<input id="confirm-password" type="password" minlength="16" maxlength="128" autocomplete="new-password"></label></div><button class="button secondary" id="change-password">Simpan password baru</button><p class="error" id="password-error" role="alert"></p></section></div></div>`
 
   document.querySelector('#logout').onclick = async () => { await post('/api/admin/logout', {}); login() }
   document.querySelector('#apply-range').onclick = () => {
@@ -249,20 +257,23 @@ function renderRules() {
       ${fields.map(([key, label]) => `<label class="field">${label}<input type="number" min="0" step="any" data-rule="${key}" value="${escape(rules[key])}"></label>`).join('')}
     </div>
     <div class="actions"><button id="preview-rules" class="button secondary">Lihat contoh harga</button><button id="save-rules" class="button secondary">Simpan draf</button>${draft ? '<button id="publish-rules" class="button">Terbitkan draf untuk klien</button>' : ''}</div>
-    <div id="rules-preview"></div>
-    <p class="error" id="rules-error"></p>`
+    <div id="rules-preview" aria-live="polite"></div>
+    <p class="error" id="rules-error" role="alert"></p>`
   const readForm = () => ({
     days: Object.fromEntries([...document.querySelectorAll('[data-day]')].map(input => [input.dataset.day, Number(input.value)])),
     methodDays: Object.fromEntries([...document.querySelectorAll('[data-method]')].map(input => [input.dataset.method, Number(input.value)])),
     ...Object.fromEntries([...document.querySelectorAll('[data-rule]')].map(input => [input.dataset.rule, Number(input.value)]))
   })
-  document.querySelector('#preview-rules').onclick = async () => {
+  const renderPreview = async () => {
     try {
-      const { samples } = await post('/api/admin/rules/preview', readForm())
+      const { samples, conditions } = await post('/api/admin/rules/preview', readForm())
       document.querySelector('#rules-error').textContent = ''
-      document.querySelector('#rules-preview').innerHTML = `<div class="table-wrap"><table><thead><tr><th>Contoh satu objek</th><th>Hari kerja</th><th>Kisaran indikatif</th></tr></thead><tbody>${samples.map(item => `<tr><td>${escape(item.name)}</td><td>${item.result.days}</td><td>${money(item.result.low)} – ${money(item.result.high)}</td></tr>`).join('')}</tbody></table></div><p class="muted">Asumsi contoh: satu objek, satu peran, ukuran 10, staging, akses internet, jam kerja.</p>`
+      const rows = items => items.map(item => `<tr><th scope="row">${escape(item.name)}</th><td>${item.result.days ?? '—'}</td><td>${item.result.status === 'estimate' ? `${money(item.result.low)} – ${money(item.result.high)}` : 'Tinjau manual'}</td></tr>`).join('')
+      const table = (title, items) => `<h3>${title}</h3><div class="table-wrap"><table><thead><tr><th scope="col">Kondisi</th><th scope="col">Hari kerja</th><th scope="col">Kisaran indikatif</th></tr></thead><tbody>${rows(items)}</tbody></table></div>`
+      document.querySelector('#rules-preview').innerHTML = `<p class="notice">Pratinjau internal dari angka pada formulir. Mengubah draf atau melihat contoh tidak menerbitkan harga ke klien.</p>${table('Harga dasar tiap objek dan metode', samples)}<p class="muted">Asumsi: satu objek, satu peran, ukuran 10, staging, akses internet, jam kerja. Mobile memakai satu platform Android.</p>${table('Dampak kondisi dan pengecualian', conditions)}<p class="muted">“Tinjau manual” berarti harga ditahan sampai cakupan jelas, termasuk onsite, dua platform mobile, dan objek yang berbagi backend. VPN tidak menambah hari dalam aturan saat ini.</p>`
     } catch (err) { document.querySelector('#rules-error').textContent = err.message }
   }
+  document.querySelector('#preview-rules').onclick = renderPreview
   document.querySelector('#save-rules').onclick = async () => {
     try {
       await post('/api/admin/rules', readForm())
@@ -277,6 +288,7 @@ function renderRules() {
       await load()
     } catch (err) { document.querySelector('#rules-error').textContent = err.message }
   }
+  if (draft || published?.version) renderPreview()
 }
 
 const invitation = new URLSearchParams(location.hash.slice(1)).get('invite')
