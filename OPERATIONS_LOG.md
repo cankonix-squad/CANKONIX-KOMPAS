@@ -24,3 +24,11 @@ Untuk snapshot agregat berikutnya, jalankan `docker compose -f docker-compose.pr
 - Backup `20261014T163806Z` disalin ke direktori sementara pada VPS dan dijalankan melalui image KOMPAS terpisah dengan `--network none`; volume produksi tidak dipasang.
 - Endpoint kesehatan merespons berhasil; `PRAGMA integrity_check` menghasilkan `ok`; salinan berisi 2 permintaan dan aturan harga terbit versi 1.
 - Container dan direktori sementara uji sudah dibersihkan. Prosedur dapat diulang lewat `scripts/restore-drill.sh`.
+
+## 15 Oktober 2026 — pemantauan otomatis
+
+- Workflow `KOMPAS Monitor` menerima hasil CI/CD branch `main` dan pemeriksaan HTTPS manual berhasil.
+- Uji issue peringatan pertama menemukan jeda indeks GitHub: issue terbuat, tetapi pencarian pada detik yang sama belum menemukannya. Alur uji diperbaiki dengan memakai nomor issue hasil pembuatan secara langsung; issue #1 yang tertinggal lalu ditutup.
+- Uji berikutnya membuat issue #2, menugaskannya ke `cankonix-squad`, dan menutupnya otomatis setelah pemeriksaan berhasil. Tidak ada issue uji terbuka.
+- Run terjadwal yang teramati pada 14 Oktober 2026 pukul 20:21 dan 23:19 UTC berhasil. Jaraknya lebih panjang dari target 15 menit; pemantauan GitHub Actions ini bersifat best-effort.
+- Endpoint produksi `/api/health` tetap merespons `{"ok":true}` setelah deploy terakhir.
