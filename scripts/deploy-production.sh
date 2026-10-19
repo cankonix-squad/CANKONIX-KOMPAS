@@ -60,5 +60,23 @@ if [ "$public" -ne 1 ]; then
   exit 1
 fi
 
+if getent ahostsv4 kompas.dothree.co.id >/dev/null 2>&1; then
+  secondary=0
+  for attempt in $(seq 1 24); do
+    if curl --fail --silent --show-error https://kompas.dothree.co.id/api/health >/dev/null 2>&1; then
+      secondary=1
+      break
+    fi
+    sleep 5
+  done
+  if [ "$secondary" -ne 1 ]; then
+    rollback
+    exit 1
+  fi
+else
+  echo 'DNS kompas.dothree.co.id belum tersedia; pemeriksaan HTTPS domain kedua ditunda.'
+fi
+
 docker compose -f docker-compose.prod.yml ps
 echo 'KOMPAS siap di https://kompas.cankonix.com/'
+echo 'Routing domain kedua: https://kompas.dothree.co.id/'

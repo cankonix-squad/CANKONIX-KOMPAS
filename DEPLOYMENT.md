@@ -1,6 +1,6 @@
 # Rilis KOMPAS
 
-Target: `https://kompas.cankonix.com/` pada VPS `187.77.127.202`, folder `/root/cankonix-node/apps/cankonix-kompas/`.
+Target: `https://kompas.cankonix.com/` dan `https://kompas.dothree.co.id/` pada VPS `187.77.127.202`, folder `/root/cankonix-node/apps/cankonix-kompas/`. Kedua nama domain menuju container dan database yang sama. Admin dapat masuk dari salah satu domain; sesi browser terpisah per domain.
 
 ## CI/CD
 
@@ -14,7 +14,7 @@ Compose produksi menetapkan `TRUST_PROXY=true` karena aplikasi hanya menerima la
 
 ## Deploy dan pemeriksaan
 
-Script deploy memvalidasi Compose, membangun image baru, menghentikan container lama bila ada, menyalin isi volume SQLite ke `/root/cankonix-node/backups/cankonix-kompas/<waktu-UTC>/`, lalu menjalankan image baru. Pemeriksaan internal `/api/health` dan HTTPS domain harus lulus. Jika pemeriksaan gagal dan image lama tersedia, script mengembalikan image lama.
+Script deploy memvalidasi Compose, membangun image baru, menghentikan container lama bila ada, menyalin isi volume SQLite ke `/root/cankonix-node/backups/cankonix-kompas/<waktu-UTC>/`, lalu menjalankan image baru. Pemeriksaan internal `/api/health` dan HTTPS domain Cankonix harus lulus. Domain Dothree juga diperiksa jika DNS sudah tersedia dari VPS. Jika pemeriksaan gagal dan image lama tersedia, script mengembalikan image lama. Jika DNS Dothree belum tersedia, routing tetap terpasang dan pemeriksaan HTTPS ditunda sampai rekam A `kompas.dothree.co.id` menuju `187.77.127.202` dapat di-resolve.
 
 Setelah deploy, periksa formulir publik, permintaan proposal, login admin, dashboard, serta sertifikat HTTPS. Periksa container dengan `docker compose -f docker-compose.prod.yml ps` dan log dengan `docker compose -f docker-compose.prod.yml logs --tail=100 kompas` dari folder aplikasi VPS. Jangan gunakan data klien nyata untuk smoke test otomatis.
 

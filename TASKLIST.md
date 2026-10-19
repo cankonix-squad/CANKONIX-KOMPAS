@@ -10,12 +10,14 @@
 | --- | --- |
 | Folder kerja lokal | `/Users/cankonix/Documents/Cankonix Labs/KOMPAS` |
 | Repo GitHub tujuan | `https://github.com/cankonix-squad/CANKONIX-KOMPAS` |
-| Domain produksi | `https://kompas.cankonix.com/` |
+| Domain produksi | `https://kompas.cankonix.com/` dan `https://kompas.dothree.co.id/` (domain kedua menunggu DNS/HTTPS) |
 | IP VPS target | `187.77.127.202` |
 | Folder aplikasi pada VPS | `~/cankonix-node/apps/cankonix-kompas/` pada sesi `root@cankonix` |
 | Acuan aset dan tampilan | `/Users/cankonix/Documents/Cankonix Labs/COMPLY` |
 
 DNS `kompas.cankonix.com` mengarah ke `187.77.127.202`. Aplikasi berjalan di VPS melalui Docker Compose dan Traefik pada jaringan `cankonix-proxy`. Sertifikat HTTPS valid dan `/api/health` merespons 200 pada 14 Oktober 2026. Repo GitHub terhubung ke branch `main`; setiap push menjalankan tes, build, backup SQLite sebelum penggantian container, deploy, dan pemeriksaan HTTPS. Aturan harga sementara versi 1 sudah diterbitkan kepada klien pada 14 Oktober 2026.
+
+Pada 19 Oktober 2026, `kompas.dothree.co.id` masih mengembalikan `NXDOMAIN` dari resolver publik dan nameserver Dothree. Routing domain kedua disiapkan di Traefik; akses publik dan sertifikat HTTPS harus diverifikasi setelah rekam A tersedia.
 
 **Keputusan tarif sementara (14 Oktober 2026):** pemilik produk menyetujui penggunaan dasar Rp6.000.000 per hari kerja dan harga minimum Rp20.000.000 untuk sementara, lalu meminta sistem dilanjutkan sampai harga live. Aturan versi 1 telah diterbitkan melalui alur admin setelah pratinjau 12 kombinasi dasar diperiksa. Angka tetap dapat direvisi melalui draf versi berikutnya; kalibrasi dengan biaya/proyek nyata masih terbuka.
 
@@ -132,6 +134,7 @@ Pengujian API lokal memakai direktori SQLite sementara dan akun sintetis; jalank
 - [x] Tinjau perubahan, buat commit lokal, dan arahkan remote Git ke `https://github.com/cankonix-squad/CANKONIX-KOMPAS` setelah memastikan keadaan repo tujuan.
 - [x] Push fondasi MVP yang lulus tes awal ke branch `main`; commit pertama `4950330` bukan kandidat rilis final.
 - [x] Periksa DNS `kompas.cankonix.com` menuju IP target `187.77.127.202`.
+- [ ] Pastikan DNS `kompas.dothree.co.id` menuju `187.77.127.202`, lalu verifikasi HTTPS, halaman publik, dan `/api/health` pada alamat kedua.
 - [x] Periksa sertifikat TLS domain KOMPAS; HTTPS valid dan container sehat.
 - [x] Siapkan Dockerfile dan contoh Compose produksi; image berhasil dibangun dan health check merespons pada container lokal.
 - [x] Siapkan konfigurasi produksi di luar repo, migrasi database otomatis, prosedur deploy, health check, dan langkah rollback dalam `DEPLOYMENT.md`.
